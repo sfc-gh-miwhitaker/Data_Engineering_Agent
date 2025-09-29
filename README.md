@@ -69,7 +69,7 @@ Data_Engineering_Agent/
 
 ## Support
 
-This project is designed for production use in customer environments. The setup script includes comprehensive documentation and troubleshooting guidance.
+None - use at your own risk
 
 ## Acknowledgments
 
