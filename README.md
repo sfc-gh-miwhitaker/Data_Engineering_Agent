@@ -26,26 +26,31 @@ This project provides a complete setup for deploying a Snowflake Intelligence Ag
 
 ## Quick Start
  
-1. **Review and Update the Setup Script**
+1. **Review and Configure the Setup Script**
    - Open `Snowflake_Assistant_setup.sql`
-   - Replace `YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM` with the address that should receive notifications
+   - Update configuration variables (lines 48-49):
+     - `SET role_name = 'SYSADMIN';` (or your preferred role)
+     - `SET warehouse_name = 'COMPUTE_WH';` (or your existing warehouse)
+   - Replace `YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM` (line ~201) with your email address
 
 2. **Execute the Script as ACCOUNTADMIN**
    - Sign in to Snowsight as a user with the `ACCOUNTADMIN` role
-   - Run the entire script in the Worksheets UI (the script handles role creation, grants, Marketplace installation, and agent provisioning)
+   - Run the entire script in the Worksheets UI
+   - The script is idempotent and handles role grants, Marketplace installation, and agent provisioning
 
 3. **Verify the Deployment**
-   - Confirm the `snowflake_intelligence` database, `cortex_role`, and `Snowflake_Assistant_V2` agent exist
-   - Send a test message to the agent and trigger an email via the provided `send_email` procedure
+   - Confirm the `snowflake_intelligence` database and `snowflake_assistant_v2` agent exist
+   - Check that the test email was received
+   - Test the agent by asking: "What were my slowest queries this week?"
 
 ## What Gets Created
 
-- **cortex_role** with the minimum privileges required to manage Snowflake Intelligence assets
-- **snowflake_intelligence** database with `agents` and `tools` schemas
-- Semantic view `snowflake_intelligence.tools.Snowflake_Query_History` combining query and attribution history
-- AI agent `snowflake_intelligence.agents.Snowflake_Assistant_V2` pre-configured with Cortex Analyst, Cortex Search, and email tooling
+- **snowflake_intelligence** database with `agents` and `tools` schemas (managed by `SYSADMIN` role)
+- Semantic view `snowflake_intelligence.tools.snowflake_query_history` combining query and attribution history
+- AI agent `snowflake_intelligence.agents.snowflake_assistant_v2` pre-configured with Cortex Analyst, Cortex Search, and email tooling
 - Notification integration `email_integration` and supporting stored procedure for HTML email delivery
-- Marketplace import of the Snowflake Documentation corpus (`SNOWFLAKE_DOCUMENTATION` database)
+- Marketplace import of the Snowflake Documentation corpus (`snowflake_documentation` database)
+- All objects use `SYSADMIN` role following the principle of least privilege
 
 ## Usage Examples
 
@@ -62,13 +67,27 @@ Once deployed, you can ask your Data Engineer Assistant questions like:
 
 ```
 Data_Engineering_Agent/
+├── LICENSE                         # Apache 2.0 license
 ├── README.md                       # This file
-└── Snowflake_Assistant_setup.sql   # Full automation script for agent deployment
+├── Snowflake_Assistant_setup.sql   # Full automation script for agent deployment
+└── archive/                        # Previous versions
 ```
+
+## Security Considerations
+
+- The script uses `SYSADMIN` role following the principle of least privilege
+- SQL injection protection implemented in the Python email procedure
+- All user inputs are escaped before being passed to system procedures
+- `PUBLIC` role is granted `USAGE` only (not ownership or modification rights)
+- Review the email integration security requirements for your organization
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
-None - use at your own risk
+None - use at your own risk. This is community-supported code.
 
 ## Acknowledgments
 

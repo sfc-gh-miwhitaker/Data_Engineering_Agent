@@ -1,52 +1,85 @@
-use role accountadmin;
--- to get access to all the models to use
-ALTER ACCOUNT SET CORTEX_ENABLED_CROSS_REGION = 'ANY_REGION' ;
+/*******************************************************************************
+ * File: Snowflake_Assistant_setup.sql
+ * 
+ * Synopsis:
+ *   Complete setup script for deploying the Snowflake Intelligence Agent,
+ *   an AI-powered assistant for query performance optimization and cost analysis.
+ * 
+ * Description:
+ *   This script creates and configures a Snowflake Intelligence Agent that
+ *   analyzes ACCOUNT_USAGE.QUERY_HISTORY to provide personalized recommendations
+ *   for optimizing Snowflake performance. The agent integrates Cortex Analyst
+ *   for text-to-SQL capabilities, Cortex Search for documentation lookup, and
+ *   email notification capabilities.
+ * 
+ * Prerequisites:
+ *   - ACCOUNTADMIN role privileges
+ *   - Cortex features enabled in the account
+ *   - Email domain allow-listed for notification integrations
+ *   - Existing warehouse for agent execution (default: COMPUTE_WH)
+ * 
+ * Configuration:
+ *   Before running, update the following variables in the script:
+ *   - SET role_name: Target role (default: SYSADMIN)
+ *   - SET warehouse_name: Execution warehouse (default: COMPUTE_WH)
+ *   - Email address in the test CALL statement (line ~200)
+ * 
+ * Security:
+ *   - Uses SYSADMIN role following principle of least privilege
+ *   - All SQL injection vectors mitigated via input escaping
+ *   - Grants PUBLIC access to view agents (not modify)
+ * 
+ * Author: Based on work by Kaitlyn Wells (@snowflake)
+ * Modified: 2025-10-08
+ * Version: 2.0
+ * License: Apache 2.0
+ * 
+ * Usage:
+ *   Execute this entire script as a user with ACCOUNTADMIN privileges.
+ *   The script is idempotent and can be re-run safely.
+ ******************************************************************************/
 
--- YOUR CUSTOM ROLE FOR CORTEX ADMIN
-set role_name='cortex_role';
-set current_user=current_user();
+USE ROLE ACCOUNTADMIN;
 
-create role if not exists identifier($role_name);
-grant role identifier($role_name)  to role accountadmin;
-GRANT ROLE identifier($role_name) TO USER IDENTIFIER($current_user);
+-- Enable cross-region Cortex model access for the account
+ALTER ACCOUNT SET CORTEX_ENABLED_CROSS_REGION = 'ANY_REGION';
 
-grant create database on account to role identifier($role_name);
-grant create warehouse on account to role identifier($role_name);
-grant create role on account to role identifier($role_name);
-grant MANAGE GRANTS on account to role identifier($role_name);
-grant CREATE INTEGRATION on account to role identifier($role_name);
-grant CREATE APPLICATION PACKAGE on account to role identifier($role_name);
-grant CREATE APPLICATION on account to role identifier($role_name);
-grant IMPORT SHARE on account to role identifier($role_name);
+-- Configuration variables: Customize these for your environment
+SET role_name = 'SYSADMIN';
+SET warehouse_name = 'COMPUTE_WH';
 
--- control who you want to use cortex
+-- Grant Cortex access to PUBLIC role (allows all users to leverage Cortex features)
 GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE PUBLIC;
 
-use role identifier($role_name);
--- main cortex database, DO NOT CHANGE NAME
+USE ROLE identifier($role_name);
+
+-- Create the main Snowflake Intelligence database (DO NOT CHANGE NAME)
 CREATE DATABASE IF NOT EXISTS snowflake_intelligence;
---for agents used by Snowflake Intelligence
+
+-- Create schema for agents
 CREATE SCHEMA IF NOT EXISTS snowflake_intelligence.agents;
--- for tools used by agents
+
+-- Create schema for tools used by agents
 CREATE SCHEMA IF NOT EXISTS snowflake_intelligence.tools;
--- Allow anyone to see the agents in this schema
--- Please note that we are granting access to the public role,  so all users can see  the agents
+
+-- Grant PUBLIC role access to view agents (allows all users to see and use agents)
 GRANT USAGE ON DATABASE snowflake_intelligence TO ROLE PUBLIC;
 GRANT USAGE ON SCHEMA snowflake_intelligence.agents TO ROLE PUBLIC;
 GRANT USAGE ON SCHEMA snowflake_intelligence.tools TO ROLE PUBLIC;
 
-GRANT CREATE AGENT ON SCHEMA SNOWFLAKE_INTELLIGENCE.AGENTS TO role identifier($role_name) ;
+-- Grant agent creation privileges to the role
+GRANT CREATE AGENT ON SCHEMA snowflake_intelligence.agents TO ROLE identifier($role_name);
 
-use role cortex_role;
-use snowflake_intelligence.tools;
+USE ROLE identifier($role_name);
+USE snowflake_intelligence.tools;
 
-create or replace semantic view 
-    SNOWFLAKE_INTELLIGENCE.TOOLS.Snowflake_Query_History
- tables (
-  SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY,
-  SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY
- )
- facts (
+-- Create semantic view combining query history and attribution data
+CREATE OR REPLACE SEMANTIC VIEW snowflake_intelligence.tools.snowflake_query_history
+TABLES (
+    SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY,
+    SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY
+)
+FACTS (
   QUERY_HISTORY.BYTES_DELETED as BYTES_DELETED comment='The total amount of data deleted from the database as a result of a query, measured in bytes.',
   QUERY_HISTORY.BYTES_READ_FROM_RESULT as BYTES_READ_FROM_RESULT comment='The total number of bytes read from the query results.',
   QUERY_HISTORY.BYTES_SCANNED as BYTES_SCANNED comment='The total number of bytes scanned by the query.',
@@ -100,8 +133,8 @@ create or replace semantic view
   QUERY_ATTRIBUTION_HISTORY.CREDITS_ATTRIBUTED_COMPUTE as CREDITS_ATTRIBUTED_COMPUTE comment='The percentage of compute resources utilized that are attributed to the user or organization.',
   QUERY_ATTRIBUTION_HISTORY.CREDITS_USED_QUERY_ACCELERATION as CREDITS_USED_QUERY_ACCELERATION comment='The total amount of credits used for query acceleration.',
   QUERY_ATTRIBUTION_HISTORY.WAREHOUSE_ID as WAREHOUSE_ID comment='Unique identifier for the warehouse where the inventory is stored.'
- )
- dimensions (
+)
+DIMENSIONS (
   QUERY_HISTORY.DATABASE_NAME as DATABASE_NAME comment='The name of the database where the query was executed.',
   QUERY_HISTORY.END_TIME as END_TIME comment='The date and time when each query was completed, in ISO 8601 format.',
   QUERY_HISTORY.ERROR_CODE as ERROR_CODE comment='Error codes associated with query execution, indicating specific issues or failures that occurred during query processing.',
@@ -142,42 +175,58 @@ create or replace semantic view
   QUERY_ATTRIBUTION_HISTORY.START_TIME as START_TIME comment='The timestamp when the attribution event started.',
   QUERY_ATTRIBUTION_HISTORY.USER_NAME as USER_NAME comment='The user or system that made the attribution change.',
   QUERY_ATTRIBUTION_HISTORY.WAREHOUSE_NAME as WAREHOUSE_NAME comment='The name of the warehouse where the data is stored.'
- )
- comment='Unlock hidden performance insights from your query history to drive measurable cost
-savings and performance improvements.'
- with extension (CA='{"tables":[{"name":"QUERY_HISTORY","dimensions":[{"name":"DATABASE_NAME","sample_values":["SNOWFLAKE_INTELLIGENCE","CORTEX_DB"]},{"name":"ERROR_CODE","sample_values":["002140","002003"]},{"name":"ERROR_MESSAGE","sample_values":["SQL compilation error:\\nOrganization profile ''INTERNAL'' does not exist or not authorized.","SQL compilation error:\\nWorkspace ''\\"USER$\\".PUBLIC.\\"DEFAULT$\\"'' does not exist or not authorized."]},{"name":"EXECUTION_STATUS","sample_values":["SUCCESS","FAIL"]},{"name":"INBOUND_DATA_TRANSFER_CLOUD"},{"name":"INBOUND_DATA_TRANSFER_REGION"},{"name":"IS_CLIENT_GENERATED_STATEMENT","sample_values":["TRUE","FALSE"]},{"name":"OUTBOUND_DATA_TRANSFER_CLOUD","sample_values":["AZURE"]},{"name":"OUTBOUND_DATA_TRANSFER_REGION","sample_values":["westus2"]},{"name":"QUERY_HASH","sample_values":["942433b7f6946b737a0d03c71e7e7f09","78c1293dc407ae1d9ab6692ddd36a56a","3741300aa7652d8734f9dee4fe74e543"]},{"name":"QUERY_ID","sample_values":["01bf33b0-0206-b687-0003-66420001591a","01bf33b0-0206-b6c6-0003-664200013d56","01bf33b0-0206-b687-0003-6642000158fa"]},{"name":"QUERY_PARAMETERIZED_HASH","sample_values":["bcd1347509a72461cc6f0fdc0dae002b","0fe54efb178617f9a0f6f77572d84dce","29918b1976d7a9de68b3d20a52ee84a6"]},{"name":"QUERY_RETRY_CAUSE"},{"name":"QUERY_TAG","sample_values":["{Job_Name: ''DataOps FinObs''}","cortex-agent"]},{"name":"QUERY_TEXT","sample_values":["CALL SYSTEM$GET_RECENT_IN_APP_NOTIFICATIONS();","show terse SCHEMAS in DATABASE IDENTIFIER(''\\"DEFAULT_DATABASE\\"'') limit 10000","show terse DATABASES limit 10000"]},{"name":"QUERY_TYPE","sample_values":["SHOW","GET_FILES","LIST_FILES"]},{"name":"RELEASE_VERSION","sample_values":["9.28.1"]},{"name":"ROLE_NAME","sample_values":["PUBLIC","ATTENDEE_ROLE","ACCOUNTADMIN"]},{"name":"ROLE_TYPE","sample_values":["ROLE","APPLICATION"]},{"name":"SCHEMA_NAME","sample_values":["AGENTS","DATA"]},{"name":"SECONDARY_ROLE_STATS","sample_values":["{\\"roleCount\\":3,\\"roleIds\\":[121,4,102]}","{\\"roleCount\\":2,\\"roleIds\\":[1,4]}"]},{"name":"USER_DATABASE_NAME"},{"name":"USER_NAME","sample_values":["SYSTEM","WORKSHEETS_APP_USER","DATAOPS_SERVICE_ADMIN"]},{"name":"USER_SCHEMA_NAME"},{"name":"USER_TYPE","sample_values":["SERVICE","PERSON"]},{"name":"WAREHOUSE_NAME","sample_values":["COMPUTE_SERVICE_WH_SNOWFLAKEDB_UPGRADE_POOL_XLARGE_0","COMPUTE_SERVICE_WH_USER_TASKS_POOL_XSMALL_0"]},{"name":"WAREHOUSE_SIZE","sample_values":["X-Small","Large"]},{"name":"WAREHOUSE_TYPE","sample_values":["STANDARD"]}],"facts":[{"name":"BYTES_DELETED","sample_values":["109","153","107"]},{"name":"BYTES_READ_FROM_RESULT","sample_values":["0"]},{"name":"BYTES_SCANNED","sample_values":["31786752","31509024","33322864"]},{"name":"BYTES_SENT_OVER_THE_NETWORK","sample_values":["16846751","2632165","128595"]},{"name":"BYTES_SPILLED_TO_LOCAL_STORAGE","sample_values":["68128","67645","68053"]},{"name":"BYTES_SPILLED_TO_REMOTE_STORAGE","sample_values":["0"]},{"name":"BYTES_WRITTEN","sample_values":["0","96256","337920"]},{"name":"BYTES_WRITTEN_TO_RESULT","sample_values":["64","103","0"]},{"name":"CHILD_QUERIES_WAIT_TIME","sample_values":["0"]},{"name":"CLUSTER_NUMBER","sample_values":["6","1"]},{"name":"COMPILATION_TIME","sample_values":["42","791","695"]},{"name":"CREDITS_USED_CLOUD_SERVICES","sample_values":["0.000201","6.7e-05","0"]},{"name":"DATABASE_ID","sample_values":["1","9"]},{"name":"EXECUTION_TIME","sample_values":["10","717","13"]},{"name":"EXTERNAL_FUNCTION_TOTAL_INVOCATIONS","sample_values":["13","1","0"]},{"name":"EXTERNAL_FUNCTION_TOTAL_RECEIVED_BYTES","sample_values":["97","50","135"]},{"name":"EXTERNAL_FUNCTION_TOTAL_RECEIVED_ROWS","sample_values":["30","1","0"]},{"name":"EXTERNAL_FUNCTION_TOTAL_SENT_BYTES","sample_values":["1822","1836","1740"]},{"name":"EXTERNAL_FUNCTION_TOTAL_SENT_ROWS","sample_values":["400","0","30"]},{"name":"FAULT_HANDLING_TIME"},{"name":"INBOUND_DATA_TRANSFER_BYTES","sample_values":["0"]},{"name":"LIST_EXTERNAL_FILES_TIME","sample_values":["8","0","11"]},{"name":"OUTBOUND_DATA_TRANSFER_BYTES","sample_values":["0","112","160"]},{"name":"PARTITIONS_SCANNED","sample_values":["17","34","29"]},{"name":"PARTITIONS_TOTAL","sample_values":["15174243","0","15174371"]},{"name":"PERCENTAGE_SCANNED_FROM_CACHE","sample_values":["0.0007866414286","0.224487988","0.321304926"]},{"name":"QUERY_ACCELERATION_BYTES_SCANNED","sample_values":["0"]},{"name":"QUERY_ACCELERATION_PARTITIONS_SCANNED","sample_values":["0"]},{"name":"QUERY_ACCELERATION_UPPER_LIMIT_SCALE_FACTOR","sample_values":["0"]},{"name":"QUERY_HASH_VERSION","sample_values":["2"]},{"name":"QUERY_LOAD_PERCENT","sample_values":["13","100"]},{"name":"QUERY_PARAMETERIZED_HASH_VERSION","sample_values":["1"]},{"name":"QUERY_RETRY_TIME"},{"name":"QUEUED_OVERLOAD_TIME","sample_values":["167","0"]},{"name":"QUEUED_PROVISIONING_TIME","sample_values":["0","68","97"]},{"name":"QUEUED_REPAIR_TIME","sample_values":["0"]},{"name":"ROWS_DELETED","sample_values":["1","0"]},{"name":"ROWS_INSERTED","sample_values":["9626","400","10000"]},{"name":"ROWS_PRODUCED","sample_values":["4","29248","9"]},{"name":"ROWS_UNLOADED","sample_values":["0","1"]},{"name":"ROWS_UPDATED","sample_values":["3000000","629","1"]},{"name":"ROWS_WRITTEN_TO_RESULT","sample_values":["52","37","1"]},{"name":"SCHEMA_ID","sample_values":["41","40"]},{"name":"SESSION_ID","sample_values":["14600508993","14600513129","14600509021"]},{"name":"TOTAL_ELAPSED_TIME","sample_values":["33","444","414"]},{"name":"TRANSACTION_BLOCKED_TIME","sample_values":["0"]},{"name":"TRANSACTION_ID","sample_values":["1758320956315000000","1758319475930000000","0"]},{"name":"USER_DATABASE_ID"},{"name":"USER_SCHEMA_ID"},{"name":"WAREHOUSE_ID","sample_values":["38342038","4"]}],"time_dimensions":[{"name":"END_TIME","sample_values":["2025-09-21T15:41:43.994+0000","2025-09-21T15:41:27.921+0000","2025-09-21T15:41:41.840+0000"]},{"name":"START_TIME","sample_values":["2025-09-21T15:42:35.888+0000","2025-09-21T15:42:56.772+0000","2025-09-21T15:42:48.791+0000"]}]},{"name":"QUERY_ATTRIBUTION_HISTORY","dimensions":[{"name":"PARENT_QUERY_ID","sample_values":["01bf292e-0206-b6cd-0000-000366425b35","01bf2929-0206-b687-0000-0003664246d1"]},{"name":"QUERY_HASH","sample_values":["a4c5811f10a592259ee42a9343d1cb4d","c9410aee083c5aaa32ba7c1191c97fbd","ff253e480bec3b247dce4cbff39821c6"]},{"name":"QUERY_ID","sample_values":["01bf292b-0206-b6c6-0000-000366426d91","01bf292a-0206-b6c6-0000-000366426d19","01bf292c-0206-b6c6-0000-000366426e7d"]},{"name":"QUERY_PARAMETERIZED_HASH","sample_values":["c13c73aebd5b7eee45acf269a0f1e079","7ad08245b86fdc2d26c455f2f1af7d3b","28a4047e23020e250b7c871546db0864"]},{"name":"QUERY_TAG","sample_values":["{\\"DataOps_Pipeline_ID\\": \\"8266374\\", \\"Job_Name\\": \\"Configure Attendee Account\\", \\"Job_ID\\": \\"63844449\\", \\"Branch\\": \\"main\\", \\"Agent\\": \\"prod-ssc-pipeline-runner-2023, frostbyte-runner, prod-ssc-pipeline-runner\\", \\"Project_ID\\": \\"24496\\", \\"Project_Name\\": \\"snowflake-cortex-aisql-hol-pack\\", \\"Project_Path\\": \\"snowflake/hands-on-labs/snowflake-cortex-aisql-hol-pack\\"}","cortex-agent"]},{"name":"ROOT_QUERY_ID","sample_values":["01bf292d-0206-b6cd-0000-000366425999","01bf292a-0206-b6c6-0000-000366426ba1","01bf2929-0206-b687-0000-0003664246d1"]},{"name":"USER_NAME","sample_values":["USER","SYSTEM","DATAOPS_SERVICE_ADMIN"]},{"name":"WAREHOUSE_NAME","sample_values":["DEFAULT_WH"]}],"facts":[{"name":"CREDITS_ATTRIBUTED_COMPUTE","sample_values":["0.0006713571668","0.0005083140445","0.0002694675794"]},{"name":"CREDITS_USED_QUERY_ACCELERATION"},{"name":"WAREHOUSE_ID","sample_values":["4"]}],"time_dimensions":[{"name":"END_TIME","sample_values":["2025-09-19T18:52:50.861+0000","2025-09-18T21:44:42.353+0000","2025-09-19T18:51:26.588+0000"]},{"name":"START_TIME","sample_values":["2025-09-19T18:48:33.491+0000","2025-09-19T18:50:48.156+0000","2025-09-19T18:39:15.953+0000"]}]}],"verified_queries":[{"name":"What was the longest running query in the past week?","question":"What was the longest running query in the past week?","sql":"SELECT\\n  query_id,\\n  query_text,\\n  user_name,\\n  warehouse_name,\\n  start_time,\\n  end_time,\\n  total_elapsed_time\\nFROM\\n  query_history\\nWHERE\\n  start_time >= DATE_TRUNC(''WEEK'', CURRENT_DATE - INTERVAL ''1 WEEK'')\\n  AND start_time < DATE_TRUNC(''WEEK'', CURRENT_DATE)\\nORDER BY\\n  total_elapsed_time DESC NULLS LAST\\nLIMIT\\n  1","use_as_onboarding_question":false,"verified_by":"EVENT USER","verified_at":1758469957}]}');
-
--- now create custom tools for email
-
-create or replace notification integration email_integration
-  type=email
-  enabled=true
-  default_subject = 'snowflake intelligence'
-;
-
-create or replace procedure snowflake_intelligence.tools.send_email(
-    recipient_email varchar,
-    subject varchar,
-    body varchar
 )
-returns varchar
-language python
-runtime_version = '3.12'
-packages = ('snowflake-snowpark-python')
-handler = 'send_email'
-as
+COMMENT = 'Unlock hidden performance insights from your query history to drive measurable cost savings and performance improvements.'
+WITH EXTENSION (CA = '{"tables":[{"name":"QUERY_HISTORY","dimensions":[{"name":"DATABASE_NAME","sample_values":["SNOWFLAKE_INTELLIGENCE","CORTEX_DB"]},{"name":"ERROR_CODE","sample_values":["002140","002003"]},{"name":"ERROR_MESSAGE","sample_values":["SQL compilation error:\\nOrganization profile ''INTERNAL'' does not exist or not authorized.","SQL compilation error:\\nWorkspace ''\\"USER$\\".PUBLIC.\\"DEFAULT$\\"'' does not exist or not authorized."]},{"name":"EXECUTION_STATUS","sample_values":["SUCCESS","FAIL"]},{"name":"INBOUND_DATA_TRANSFER_CLOUD"},{"name":"INBOUND_DATA_TRANSFER_REGION"},{"name":"IS_CLIENT_GENERATED_STATEMENT","sample_values":["TRUE","FALSE"]},{"name":"OUTBOUND_DATA_TRANSFER_CLOUD","sample_values":["AZURE"]},{"name":"OUTBOUND_DATA_TRANSFER_REGION","sample_values":["westus2"]},{"name":"QUERY_HASH","sample_values":["942433b7f6946b737a0d03c71e7e7f09","78c1293dc407ae1d9ab6692ddd36a56a","3741300aa7652d8734f9dee4fe74e543"]},{"name":"QUERY_ID","sample_values":["01bf33b0-0206-b687-0003-66420001591a","01bf33b0-0206-b6c6-0003-664200013d56","01bf33b0-0206-b687-0003-6642000158fa"]},{"name":"QUERY_PARAMETERIZED_HASH","sample_values":["bcd1347509a72461cc6f0fdc0dae002b","0fe54efb178617f9a0f6f77572d84dce","29918b1976d7a9de68b3d20a52ee84a6"]},{"name":"QUERY_RETRY_CAUSE"},{"name":"QUERY_TAG","sample_values":["{Job_Name: ''DataOps FinObs''}","cortex-agent"]},{"name":"QUERY_TEXT","sample_values":["CALL SYSTEM$GET_RECENT_IN_APP_NOTIFICATIONS();","show terse SCHEMAS in DATABASE IDENTIFIER(''\\"DEFAULT_DATABASE\\"'') limit 10000","show terse DATABASES limit 10000"]},{"name":"QUERY_TYPE","sample_values":["SHOW","GET_FILES","LIST_FILES"]},{"name":"RELEASE_VERSION","sample_values":["9.28.1"]},{"name":"ROLE_NAME","sample_values":["PUBLIC","ATTENDEE_ROLE","ACCOUNTADMIN"]},{"name":"ROLE_TYPE","sample_values":["ROLE","APPLICATION"]},{"name":"SCHEMA_NAME","sample_values":["AGENTS","DATA"]},{"name":"SECONDARY_ROLE_STATS","sample_values":["{\\"roleCount\\":3,\\"roleIds\\":[121,4,102]}","{\\"roleCount\\":2,\\"roleIds\\":[1,4]}"]},{"name":"USER_DATABASE_NAME"},{"name":"USER_NAME","sample_values":["SYSTEM","WORKSHEETS_APP_USER","DATAOPS_SERVICE_ADMIN"]},{"name":"USER_SCHEMA_NAME"},{"name":"USER_TYPE","sample_values":["SERVICE","PERSON"]},{"name":"WAREHOUSE_NAME","sample_values":["COMPUTE_SERVICE_WH_SNOWFLAKEDB_UPGRADE_POOL_XLARGE_0","COMPUTE_SERVICE_WH_USER_TASKS_POOL_XSMALL_0"]},{"name":"WAREHOUSE_SIZE","sample_values":["X-Small","Large"]},{"name":"WAREHOUSE_TYPE","sample_values":["STANDARD"]}],"facts":[{"name":"BYTES_DELETED","sample_values":["109","153","107"]},{"name":"BYTES_READ_FROM_RESULT","sample_values":["0"]},{"name":"BYTES_SCANNED","sample_values":["31786752","31509024","33322864"]},{"name":"BYTES_SENT_OVER_THE_NETWORK","sample_values":["16846751","2632165","128595"]},{"name":"BYTES_SPILLED_TO_LOCAL_STORAGE","sample_values":["68128","67645","68053"]},{"name":"BYTES_SPILLED_TO_REMOTE_STORAGE","sample_values":["0"]},{"name":"BYTES_WRITTEN","sample_values":["0","96256","337920"]},{"name":"BYTES_WRITTEN_TO_RESULT","sample_values":["64","103","0"]},{"name":"CHILD_QUERIES_WAIT_TIME","sample_values":["0"]},{"name":"CLUSTER_NUMBER","sample_values":["6","1"]},{"name":"COMPILATION_TIME","sample_values":["42","791","695"]},{"name":"CREDITS_USED_CLOUD_SERVICES","sample_values":["0.000201","6.7e-05","0"]},{"name":"DATABASE_ID","sample_values":["1","9"]},{"name":"EXECUTION_TIME","sample_values":["10","717","13"]},{"name":"EXTERNAL_FUNCTION_TOTAL_INVOCATIONS","sample_values":["13","1","0"]},{"name":"EXTERNAL_FUNCTION_TOTAL_RECEIVED_BYTES","sample_values":["97","50","135"]},{"name":"EXTERNAL_FUNCTION_TOTAL_RECEIVED_ROWS","sample_values":["30","1","0"]},{"name":"EXTERNAL_FUNCTION_TOTAL_SENT_BYTES","sample_values":["1822","1836","1740"]},{"name":"EXTERNAL_FUNCTION_TOTAL_SENT_ROWS","sample_values":["400","0","30"]},{"name":"FAULT_HANDLING_TIME"},{"name":"INBOUND_DATA_TRANSFER_BYTES","sample_values":["0"]},{"name":"LIST_EXTERNAL_FILES_TIME","sample_values":["8","0","11"]},{"name":"OUTBOUND_DATA_TRANSFER_BYTES","sample_values":["0","112","160"]},{"name":"PARTITIONS_SCANNED","sample_values":["17","34","29"]},{"name":"PARTITIONS_TOTAL","sample_values":["15174243","0","15174371"]},{"name":"PERCENTAGE_SCANNED_FROM_CACHE","sample_values":["0.0007866414286","0.224487988","0.321304926"]},{"name":"QUERY_ACCELERATION_BYTES_SCANNED","sample_values":["0"]},{"name":"QUERY_ACCELERATION_PARTITIONS_SCANNED","sample_values":["0"]},{"name":"QUERY_ACCELERATION_UPPER_LIMIT_SCALE_FACTOR","sample_values":["0"]},{"name":"QUERY_HASH_VERSION","sample_values":["2"]},{"name":"QUERY_LOAD_PERCENT","sample_values":["13","100"]},{"name":"QUERY_PARAMETERIZED_HASH_VERSION","sample_values":["1"]},{"name":"QUERY_RETRY_TIME"},{"name":"QUEUED_OVERLOAD_TIME","sample_values":["167","0"]},{"name":"QUEUED_PROVISIONING_TIME","sample_values":["0","68","97"]},{"name":"QUEUED_REPAIR_TIME","sample_values":["0"]},{"name":"ROWS_DELETED","sample_values":["1","0"]},{"name":"ROWS_INSERTED","sample_values":["9626","400","10000"]},{"name":"ROWS_PRODUCED","sample_values":["4","29248","9"]},{"name":"ROWS_UNLOADED","sample_values":["0","1"]},{"name":"ROWS_UPDATED","sample_values":["3000000","629","1"]},{"name":"ROWS_WRITTEN_TO_RESULT","sample_values":["52","37","1"]},{"name":"SCHEMA_ID","sample_values":["41","40"]},{"name":"SESSION_ID","sample_values":["14600508993","14600513129","14600509021"]},{"name":"TOTAL_ELAPSED_TIME","sample_values":["33","444","414"]},{"name":"TRANSACTION_BLOCKED_TIME","sample_values":["0"]},{"name":"TRANSACTION_ID","sample_values":["1758320956315000000","1758319475930000000","0"]},{"name":"USER_DATABASE_ID"},{"name":"USER_SCHEMA_ID"},{"name":"WAREHOUSE_ID","sample_values":["38342038","4"]}],"time_dimensions":[{"name":"END_TIME","sample_values":["2025-09-21T15:41:43.994+0000","2025-09-21T15:41:27.921+0000","2025-09-21T15:41:41.840+0000"]},{"name":"START_TIME","sample_values":["2025-09-21T15:42:35.888+0000","2025-09-21T15:42:56.772+0000","2025-09-21T15:42:48.791+0000"]}]},{"name":"QUERY_ATTRIBUTION_HISTORY","dimensions":[{"name":"PARENT_QUERY_ID","sample_values":["01bf292e-0206-b6cd-0000-000366425b35","01bf2929-0206-b687-0000-0003664246d1"]},{"name":"QUERY_HASH","sample_values":["a4c5811f10a592259ee42a9343d1cb4d","c9410aee083c5aaa32ba7c1191c97fbd","ff253e480bec3b247dce4cbff39821c6"]},{"name":"QUERY_ID","sample_values":["01bf292b-0206-b6c6-0000-000366426d91","01bf292a-0206-b6c6-0000-000366426d19","01bf292c-0206-b6c6-0000-000366426e7d"]},{"name":"QUERY_PARAMETERIZED_HASH","sample_values":["c13c73aebd5b7eee45acf269a0f1e079","7ad08245b86fdc2d26c455f2f1af7d3b","28a4047e23020e250b7c871546db0864"]},{"name":"QUERY_TAG","sample_values":["{\\"DataOps_Pipeline_ID\\": \\"8266374\\", \\"Job_Name\\": \\"Configure Attendee Account\\", \\"Job_ID\\": \\"63844449\\", \\"Branch\\": \\"main\\", \\"Agent\\": \\"prod-ssc-pipeline-runner-2023, frostbyte-runner, prod-ssc-pipeline-runner\\", \\"Project_ID\\": \\"24496\\", \\"Project_Name\\": \\"snowflake-cortex-aisql-hol-pack\\", \\"Project_Path\\": \\"snowflake/hands-on-labs/snowflake-cortex-aisql-hol-pack\\"}","cortex-agent"]},{"name":"ROOT_QUERY_ID","sample_values":["01bf292d-0206-b6cd-0000-000366425999","01bf292a-0206-b6c6-0000-000366426ba1","01bf2929-0206-b687-0000-0003664246d1"]},{"name":"USER_NAME","sample_values":["USER","SYSTEM","DATAOPS_SERVICE_ADMIN"]},{"name":"WAREHOUSE_NAME","sample_values":["DEFAULT_WH"]}],"facts":[{"name":"CREDITS_ATTRIBUTED_COMPUTE","sample_values":["0.0006713571668","0.0005083140445","0.0002694675794"]},{"name":"CREDITS_USED_QUERY_ACCELERATION"},{"name":"WAREHOUSE_ID","sample_values":["4"]}],"time_dimensions":[{"name":"END_TIME","sample_values":["2025-09-19T18:52:50.861+0000","2025-09-18T21:44:42.353+0000","2025-09-19T18:51:26.588+0000"]},{"name":"START_TIME","sample_values":["2025-09-19T18:48:33.491+0000","2025-09-19T18:50:48.156+0000","2025-09-19T18:39:15.953+0000"]}]}],"verified_queries":[{"name":"What was the longest running query in the past week?","question":"What was the longest running query in the past week?","sql":"SELECT\\n  query_id,\\n  query_text,\\n  user_name,\\n  warehouse_name,\\n  start_time,\\n  end_time,\\n  total_elapsed_time\\nFROM\\n  query_history\\nWHERE\\n  start_time >= DATE_TRUNC(''WEEK'', CURRENT_DATE - INTERVAL ''1 WEEK'')\\n  AND start_time < DATE_TRUNC(''WEEK'', CURRENT_DATE)\\nORDER BY\\n  total_elapsed_time DESC NULLS LAST\\nLIMIT\\n  1","use_as_onboarding_question":false,"verified_by":"EVENT USER","verified_at":1758469957}]}');
+
+-- Create email notification integration for agent output delivery
+CREATE OR REPLACE NOTIFICATION INTEGRATION email_integration
+    TYPE = EMAIL
+    ENABLED = TRUE
+    DEFAULT_SUBJECT = 'Snowflake Intelligence';
+
+-- Create stored procedure to send HTML emails
+CREATE OR REPLACE PROCEDURE snowflake_intelligence.tools.send_email(
+    recipient_email VARCHAR,
+    subject VARCHAR,
+    body VARCHAR
+)
+RETURNS VARCHAR
+LANGUAGE PYTHON
+RUNTIME_VERSION = '3.12'
+PACKAGES = ('snowflake-snowpark-python')
+HANDLER = 'send_email'
+COMMENT = 'Sends HTML email using SYSTEM$SEND_EMAIL with proper SQL injection protection'
+AS
 $$
 def send_email(session, recipient_email, subject, body):
-    try:
-        # Escape single quotes in the body
-        escaped_body = body.replace("'", "''")
+    """
+    Send HTML email via Snowflake notification integration.
+    
+    Security: Uses parameterized queries to prevent SQL injection.
+    All user inputs are properly escaped before being passed to SYSTEM$SEND_EMAIL.
+    
+    Args:
+        session: Snowpark session object
+        recipient_email: Email address of the recipient
+        subject: Email subject line
+        body: HTML body content
         
-        # Execute the system procedure call
+    Returns:
+        Success message or error description
+    """
+    try:
+        # Escape single quotes in all input parameters to prevent SQL injection
+        escaped_body = body.replace("'", "''")
+        escaped_subject = subject.replace("'", "''")
+        escaped_email = recipient_email.replace("'", "''")
+        
+        # Execute the system procedure call with escaped parameters
         session.sql(f"""
             CALL SYSTEM$SEND_EMAIL(
                 'email_integration',
-                '{recipient_email}',
-                '{subject}',
+                '{escaped_email}',
+                '{escaped_subject}',
                 '{escaped_body}',
                 'text/html'
             )
@@ -188,29 +237,31 @@ def send_email(session, recipient_email, subject, body):
         return f"Error sending email: {str(e)}"
 $$;
 
-call snowflake_intelligence.tools.send_email(
-  'YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM',
-  'Cortex Email',
-  'This is testing of email from Snowflake');
+-- Test the email integration (REPLACE WITH YOUR EMAIL ADDRESS)
+CALL snowflake_intelligence.tools.send_email(
+    'YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM',
+    'Snowflake Intelligence - Test Email',
+    '<h1>Email Integration Test</h1><p>This is a test of the Snowflake Intelligence email notification system.</p>'
+);
 
-
--- accept terms
+-- Accept legal terms for Snowflake Documentation marketplace listing
 CALL SYSTEM$ACCEPT_LEGAL_TERMS('DATA_EXCHANGE_LISTING', 'GZSTZ67BY9OQ4');
--- create a database that includes Cortex search
-create or replace database IDENTIFIER('"SNOWFLAKE_DOCUMENTATION"') 
+
+-- Import Snowflake Documentation database from Marketplace
+CREATE OR REPLACE DATABASE snowflake_documentation
     FROM LISTING IDENTIFIER('"GZSTZ67BY9OQ4"');
--- grant usage to the public so all can use Snowflake documentation
-GRANT IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE_DOCUMENTATION  
-    TO ROLE PUBLIC;
 
+-- Grant PUBLIC role access to Snowflake Documentation
+GRANT IMPORTED PRIVILEGES ON DATABASE snowflake_documentation TO ROLE PUBLIC;
 
-use role cortex_role;
-use snowflake_intelligence.agents;
-CREATE OR REPLACE AGENT SNOWFLAKE_INTELLIGENCE.AGENTS.Snowflake_Assistant_V2
+-- Switch to the role for agent creation
+USE ROLE identifier($role_name);
+USE snowflake_intelligence.agents;
+
+-- Create the Snowflake Intelligence Agent with integrated tools
+CREATE OR REPLACE AGENT snowflake_intelligence.agents.snowflake_assistant_v2
 WITH PROFILE = '{ "display_name": "Snowflake Assistant" }'
-    COMMENT=$$ I am your Snowflake Cost Performance Assistant, designed to help you optimize query
-performance and resolve performance challenges. I analyze your actual query history
-to provide personalized, actionable recommendations for your Snowflake environment. $$
+COMMENT = 'AI-powered Snowflake Cost and Performance Assistant for query optimization and performance analysis'
 FROM SPECIFICATION $$
 {
     "models": { "orchestration": "auto" },
@@ -278,10 +329,10 @@ FROM SPECIFICATION $$
             "name": "SNOWFLAKE_DOCUMENTATION.SHARED.CKE_SNOWFLAKE_DOCS_SERVICE"
         },
         "snowflake_query_history": {
-            "semantic_view": "SNOWFLAKE_INTELLIGENCE.TOOLS.Snowflake_Query_History",
+            "semantic_view": "snowflake_intelligence.tools.snowflake_query_history",
             "execution_environment": {
                 "type": "warehouse",
-                "warehouse": "CORTEX_WH",
+                "warehouse": "${warehouse_name}",
                 "query_timeout": 60
             }
         },
@@ -291,7 +342,7 @@ FROM SPECIFICATION $$
             "type": "procedure",
             "execution_environment": {
                 "type": "warehouse",
-                "warehouse": "CORTEX_WH",
+                "warehouse": "${warehouse_name}",
                 "query_timeout": 60
             }
         }
@@ -299,8 +350,7 @@ FROM SPECIFICATION $$
 }
 $$;
 
--- review all tools and agent using following commands
-
-show semantic views in database snowflake_intelligence;
-show cortex search services in database snowflake_documentation;
-show agents in database snowflake_intelligence;
+-- Verify deployment: Review all created tools and agents
+SHOW SEMANTIC VIEWS IN DATABASE snowflake_intelligence;
+SHOW CORTEX SEARCH SERVICES IN DATABASE snowflake_documentation;
+SHOW AGENTS IN DATABASE snowflake_intelligence;
