@@ -25,7 +25,7 @@ This project provides a complete setup for deploying a Snowflake Intelligence Ag
 - Outbound email domain allow-listed for Snowflake notification integrations (update the script with your target address)
 
 ## Quick Start
-
+ 
 1. **Review and Update the Setup Script**
    - Open `Snowflake_Assistant_setup.sql`
    - Replace `YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM` with the address that should receive notifications
