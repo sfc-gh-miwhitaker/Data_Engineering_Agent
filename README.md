@@ -16,38 +16,36 @@ This project provides a complete setup for deploying a Snowflake Intelligence Ag
 - **Best Practices**: Recommends modern Snowflake features (Gen 2 warehouses, clustering, etc.)
 - **Historical Insights**: Provides trends and patterns from your query history
 - **Documentation Integration**: Seamlessly searches Snowflake documentation for relevant guidance
+- **Email Delivery**: Optionally emails the assistant output to stakeholders through a Snowflake notification integration
 
 ## Prerequisites
 
-- Snowflake account with ACCOUNTADMIN privileges
-- Snowflake Documentation Knowledge Extension (available from Marketplace)
+- Snowflake account with `ACCOUNTADMIN` privileges
+- Ability to install Marketplace listings (the script automates installation of the Snowflake Documentation Knowledge Extension)
+- Outbound email domain allow-listed for Snowflake notification integrations (update the script with your target address)
 
 ## Quick Start
 
-1. **Install Dependencies**
-   - Navigate to Data Products > Marketplace in your Snowflake account
-   - Search for and install "Snowflake Documentation" extension
+1. **Review and Update the Setup Script**
+   - Open `Snowflake_Assistant_setup.sql`
+   - Replace `YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM` with the address that should receive notifications
 
-2. **Run Setup Script**
-   ```sql
-   -- Update the username in the script
-   -- Execute snowflake_intelligence_setup_minimal.sql as ACCOUNTADMIN
-   ```
+2. **Execute the Script as ACCOUNTADMIN**
+   - Sign in to Snowsight as a user with the `ACCOUNTADMIN` role
+   - Run the entire script in the Worksheets UI (the script handles role creation, grants, Marketplace installation, and agent provisioning)
 
-3. **Follow the Guided Setup**
-   The SQL script includes comprehensive step-by-step instructions for:
-   - Creating semantic views
-   - Configuring the AI agent
-   - Setting up tools and orchestration
-   - Testing the assistant
+3. **Verify the Deployment**
+   - Confirm the `snowflake_intelligence` database, `cortex_role`, and `Snowflake_Assistant_V2` agent exist
+   - Send a test message to the agent and trigger an email via the provided `send_email` procedure
 
 ## What Gets Created
 
-- **AI_DEVELOPER** role and warehouse for agent operations
-- **SNOWFLAKE_INTELLIGENCE** database with AGENTS and DATA_AGENTS schemas
-- Semantic view analyzing QUERY_HISTORY and QUERY_ATTRIBUTION_HISTORY
-- AI Agent with Cortex Analyst and Cortex Search capabilities
-- Complete access controls and permissions
+- **cortex_role** with the minimum privileges required to manage Snowflake Intelligence assets
+- **snowflake_intelligence** database with `agents` and `tools` schemas
+- Semantic view `snowflake_intelligence.tools.Snowflake_Query_History` combining query and attribution history
+- AI agent `snowflake_intelligence.agents.Snowflake_Assistant_V2` pre-configured with Cortex Analyst, Cortex Search, and email tooling
+- Notification integration `email_integration` and supporting stored procedure for HTML email delivery
+- Marketplace import of the Snowflake Documentation corpus (`SNOWFLAKE_DOCUMENTATION` database)
 
 ## Usage Examples
 
@@ -58,13 +56,14 @@ Once deployed, you can ask your Data Engineer Assistant questions like:
 - "Show me queries with compilation errors and how to fix them"
 - "What queries are scanning the most data and how can I reduce that?"
 - "Would my query benefit from Query Acceleration or Search Optimization Service?"
+- "Send email to me summarizing the optimization plan"
 
 ## Project Structure
 
 ```
 Data_Engineering_Agent/
-├── README.md                                    # This file
-└── snowflake_intelligence_setup_minimal.sql    # Complete setup script with guided instructions
+├── README.md                       # This file
+└── Snowflake_Assistant_setup.sql   # Full automation script for agent deployment
 ```
 
 ## Support
