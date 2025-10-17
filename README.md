@@ -64,19 +64,19 @@ Data_Engineering_Agent/
 ├── LICENSE                          # Apache 2.0 license
 ├── README.md                        # This file
 ├── Snowflake_Assistant_setup.sql    # Full automation script for agent deployment
-├── deployment_checklist.md          # Pre-deployment verification steps
 ├── teardown_script.sql              # Complete removal of all deployed resources
 ├── sql/                             # Enhanced agent SQL scripts
 │   └── deploy_enhanced_agent.sql    # Complete enhanced agent deployment
 ├── help/                            # Documentation and guides
-│   ├── TESTING.md                   # Validation procedures and test scenarios
-│   ├── TROUBLESHOOTING.md           # Common issues and solutions
-│   ├── ROLE_BASED_ACCESS.md         # Restrict access to specific teams/roles
+│   ├── deployment_checklist.md      # Pre-deployment verification steps
 │   ├── ENHANCEMENT_RECOMMENDATIONS.md  # Optional improvements
 │   ├── ENHANCED_AGENT_README.md     # Enhanced agent documentation
 │   ├── RELEASE_NOTES_v2.1.md        # v2.1 release notes
 │   ├── RELEASE_NOTES_v2.2.md        # v2.2 release notes
-│   └── RELEASE_NOTES_v2.3.md        # v2.3 release notes
+│   ├── RELEASE_NOTES_v2.3.md        # v2.3 release notes
+│   ├── ROLE_BASED_ACCESS.md         # Restrict access to specific teams/roles
+│   ├── TESTING.md                   # Validation procedures and test scenarios
+│   └── TROUBLESHOOTING.md           # Common issues and solutions
 ├── .cursornotes/                    # Internal development notes (not committed)
 │   └── project_notes.md
 └── archive/                         # Previous versions
@@ -215,4 +215,4 @@ Based on original work by Kaitlyn Wells (@snowflake). Enhanced and productionize
 
 ---
 
-**Ready to deploy?** Start with `deployment_checklist.md` to ensure all prerequisites are met!
+**Ready to deploy?** Start with `help/deployment_checklist.md` to ensure all prerequisites are met!
