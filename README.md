@@ -198,6 +198,10 @@ Apache License 2.0 - see LICENSE file for details.
 ## Support
 
 - **Documentation**: See `help/` directory
+  - `help/TROUBLESHOOTING.md` - Common issues and solutions
+  - `help/TESTING.md` - Validation procedures
+  - `help/ROLE_BASED_ACCESS.md` - Restrict access to specific teams/roles
+  - `help/ENHANCED_AGENT_README.md` - Optional enhanced deployment
 - **Issues**: Submit via GitHub issues
 - **Community**: Snowflake Community forums
 

@@ -48,6 +48,8 @@ ALTER ACCOUNT SET CORTEX_ENABLED_CROSS_REGION = 'ANY_REGION';
 SET role_name = 'SYSADMIN';
 
 -- Grant Cortex access to PUBLIC role (allows all users to leverage Cortex features)
+-- NOTE: To restrict access to specific team/role, replace PUBLIC with your custom role
+--       Example: GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE DATA_ENGINEERING_TEAM;
 GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE PUBLIC;
 
 USE ROLE identifier($role_name);
@@ -62,6 +64,12 @@ CREATE SCHEMA IF NOT EXISTS snowflake_intelligence.agents;
 CREATE SCHEMA IF NOT EXISTS snowflake_intelligence.tools;
 
 -- Grant PUBLIC role access to view agents (allows all users to see and use agents)
+-- 
+-- CUSTOMIZATION: To restrict access to a specific team instead of all users:
+--   1. Replace all PUBLIC grants below with your custom role name
+--   2. Example: GRANT USAGE ON DATABASE snowflake_intelligence TO ROLE DATA_ENGINEERING_TEAM;
+--   3. This limits agent visibility and usage to only members of that role
+--   4. Also update the Snowflake Documentation grant (line ~265) and Cortex grant (line ~53)
 GRANT USAGE ON DATABASE snowflake_intelligence TO ROLE PUBLIC;
 GRANT USAGE ON SCHEMA snowflake_intelligence.agents TO ROLE PUBLIC;
 GRANT USAGE ON SCHEMA snowflake_intelligence.tools TO ROLE PUBLIC;
@@ -260,6 +268,7 @@ CREATE OR REPLACE DATABASE snowflake_documentation
     FROM LISTING IDENTIFIER('"GZSTZ67BY9OQ4"');
 
 -- Grant PUBLIC role access to Snowflake Documentation
+-- NOTE: To restrict access, replace PUBLIC with your custom role (must match other grants)
 GRANT IMPORTED PRIVILEGES ON DATABASE snowflake_documentation TO ROLE PUBLIC;
 
 -- Switch back to the configured role for agent creation

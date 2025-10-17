@@ -207,6 +207,12 @@ $$;
 -- SECTION 4: GRANT ACCESS
 -- =============================================================================
 
+-- Grant agent access to PUBLIC role (allows all users to use the enhanced agent)
+-- 
+-- CUSTOMIZATION: To restrict access to a specific team:
+--   Replace PUBLIC with your custom role name
+--   Example: GRANT USAGE ON AGENT ... TO ROLE DATA_ENGINEERING_TEAM;
+--   This limits enhanced agent access to only members of that role
 GRANT USAGE ON AGENT snowflake_intelligence.agents.snowflake_assistant_enhanced TO ROLE PUBLIC;
 
 -- =============================================================================
