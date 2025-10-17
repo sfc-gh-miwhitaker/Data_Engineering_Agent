@@ -61,23 +61,26 @@ This project provides a complete setup for deploying a Snowflake Intelligence Ag
 ```
 Data_Engineering_Agent/
 ├── .gitignore                       # Git ignore rules for sensitive files
+├── .cursorrules_template            # Reusable coding standards template
 ├── LICENSE                          # Apache 2.0 license
 ├── README.md                        # This file
 ├── Snowflake_Assistant_setup.sql    # Full automation script for agent deployment
 ├── deployment_checklist.md          # Pre-deployment verification steps
-├── teardown_script.sql             # Complete removal of all deployed resources
-├── sql/                            # Enhanced agent SQL scripts
-│   └── deploy_enhanced_agent.sql   # Complete enhanced agent deployment
-├── help/                           # Documentation and guides
-│   ├── TESTING.md                  # Validation procedures and test scenarios
-│   ├── TROUBLESHOOTING.md          # Common issues and solutions
+├── teardown_script.sql              # Complete removal of all deployed resources
+├── sql/                             # Enhanced agent SQL scripts
+│   └── deploy_enhanced_agent.sql    # Complete enhanced agent deployment
+├── help/                            # Documentation and guides
+│   ├── TESTING.md                   # Validation procedures and test scenarios
+│   ├── TROUBLESHOOTING.md           # Common issues and solutions
+│   ├── ROLE_BASED_ACCESS.md         # Restrict access to specific teams/roles
 │   ├── ENHANCEMENT_RECOMMENDATIONS.md  # Optional improvements
-│   ├── ENHANCED_AGENT_README.md    # Enhanced agent documentation
-│   ├── RELEASE_NOTES_v2.1.md       # v2.1 release notes
-│   └── CHANGELOG_v2.2.md           # v2.2-2.3 changelog
-├── .cursornotes/                   # Internal development notes (not committed)
+│   ├── ENHANCED_AGENT_README.md     # Enhanced agent documentation
+│   ├── RELEASE_NOTES_v2.1.md        # v2.1 release notes
+│   ├── RELEASE_NOTES_v2.3.md        # v2.3 release notes
+│   └── CHANGELOG_v2.2.md            # v2.2-2.3 changelog
+├── .cursornotes/                    # Internal development notes (not committed)
 │   └── project_notes.md
-└── archive/                        # Previous versions
+└── archive/                         # Previous versions
 ```
 
 ## Enhanced Agent (Optional)
