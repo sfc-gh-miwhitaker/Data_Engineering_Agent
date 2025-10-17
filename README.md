@@ -71,9 +71,7 @@ Data_Engineering_Agent/
 │   ├── deployment_checklist.md      # Pre-deployment verification steps
 │   ├── ENHANCEMENT_RECOMMENDATIONS.md  # Optional improvements
 │   ├── ENHANCED_AGENT_README.md     # Enhanced agent documentation
-│   ├── RELEASE_NOTES_v2.1.md        # v2.1 release notes
-│   ├── RELEASE_NOTES_v2.2.md        # v2.2 release notes
-│   ├── RELEASE_NOTES_v2.3.md        # v2.3 release notes
+│   ├── RELEASE_NOTES_v2.3.md        # Current release notes
 │   ├── ROLE_BASED_ACCESS.md         # Restrict access to specific teams/roles
 │   ├── TESTING.md                   # Validation procedures and test scenarios
 │   └── TROUBLESHOOTING.md           # Common issues and solutions
@@ -174,12 +172,15 @@ To remove all deployed resources:
 
 ## Version History
 
-- **v2.3** (2025-10-17): Simplified warehouse management - uses user's warehouse context
-- **v2.2** (2025-10-17): Dedicated warehouse architecture (deprecated)
-- **v2.1** (2025-10-14): Enhanced agent with domain-specific semantic views
-- **v2.0** (2025-10-08): Initial production release
+**Current Version: 2.3.1** (2025-10-17)
 
-See `help/RELEASE_NOTES_v2.2.md` for detailed change history.
+- Simplified warehouse management - uses user's warehouse context
+- System-managed warehouse filtering
+- Role-based access control documentation
+- Enhanced agent with domain-specific semantic views
+- Comprehensive documentation and testing guides
+
+See `help/RELEASE_NOTES_v2.3.md` for detailed release information.
 
 ## Contributing
 
