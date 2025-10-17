@@ -2,7 +2,7 @@
 
 **Version**: 2.3  
 **License**: Apache 2.0  
-**Status**: Production Ready
+**Status**: Community Ready
 
 A comprehensive AI-powered assistant for Snowflake data engineering optimization and performance analysis.
 
@@ -200,6 +200,8 @@ Apache License 2.0 - see LICENSE file for details.
 - **Documentation**: See `help/` directory
 - **Issues**: Submit via GitHub issues
 - **Community**: Snowflake Community forums
+
+**Disclaimer**: This is community-supported software. While thoroughly tested, it is provided "as-is" without warranties or guarantees. Users are responsible for testing in their own environments before production use. See LICENSE for full terms.
 
 ## Credits
 

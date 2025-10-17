@@ -1,7 +1,7 @@
 # Release Notes - Version 2.3
 
 **Release Date**: 2025-10-17  
-**Status**: Production Ready
+**Status**: Community Ready
 
 ---
 
@@ -249,5 +249,7 @@ DROP WAREHOUSE IF EXISTS snowflake_intelligence_wh;
 
 ---
 
-**Version 2.3 is production-ready and recommended for all new and existing deployments.**
+**Version 2.3 is community-ready and recommended for all new and existing deployments.**
+
+**Note**: This is community-supported software. While thoroughly tested, it is provided "as-is" without warranties. Users are responsible for testing in their own environments before production use.
 
