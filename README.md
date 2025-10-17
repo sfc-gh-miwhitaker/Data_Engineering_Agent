@@ -23,6 +23,7 @@ This project provides a complete setup for deploying a Snowflake Intelligence Ag
 - Snowflake account with `ACCOUNTADMIN` privileges
 - Ability to install Marketplace listings (the script automates installation of the Snowflake Documentation Knowledge Extension)
 - Outbound email domain allow-listed for Snowflake notification integrations (update the script with your target address)
+- Users must have an active warehouse to run agent queries (agent uses user's current warehouse context)
 
 ## Quick Start
  
@@ -67,11 +68,34 @@ Once deployed, you can ask your Data Engineer Assistant questions like:
 
 ```
 Data_Engineering_Agent/
-├── LICENSE                         # Apache 2.0 license
-├── README.md                       # This file
-├── Snowflake_Assistant_setup.sql   # Full automation script for agent deployment
+├── .gitignore                       # Git ignore rules for sensitive files
+├── LICENSE                          # Apache 2.0 license
+├── README.md                        # This file
+├── Snowflake_Assistant_setup.sql    # Full automation script for agent deployment
+├── deployment_checklist.md          # Pre-deployment verification steps
+├── teardown_script.sql             # Complete removal of all deployed resources
+├── sql/                            # Enhanced agent SQL scripts
+│   └── deploy_enhanced_agent.sql   # Complete enhanced agent deployment
+├── help/                           # Documentation and guides
+│   ├── TESTING.md                  # Validation procedures and test scenarios
+│   ├── TROUBLESHOOTING.md          # Common issues and solutions
+│   ├── ENHANCEMENT_RECOMMENDATIONS.md  # Optional improvements
+│   ├── ENHANCED_AGENT_README.md    # Enhanced agent documentation
+│   └── RELEASE_NOTES_v2.1.md       # Release notes for v2.1
+├── .cursornotes/                   # Internal development notes (not committed)
 └── archive/                        # Previous versions
 ```
+
+## Enhanced Agent (Optional)
+
+For improved performance and natural language understanding, deploy the **Enhanced Agent** with domain-specific semantic views:
+
+- **Three specialized tools**: Query Performance, Cost Analysis, Warehouse Operations
+- **Synonym support**: Better understanding of different phrasings
+- **Faster queries**: Smaller, focused semantic views
+- **Clear tool selection**: Keyword-based routing for better accuracy
+
+See `help/ENHANCED_AGENT_README.md` for details and deployment instructions.
 
 ## Security Considerations
 

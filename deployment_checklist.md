@@ -4,9 +4,10 @@
 
 Before running `Snowflake_Assistant_setup.sql`, verify these configurations:
 
-### 1. Configuration Variables (Lines 48-49)
+### 1. Configuration Variables (Line 48)
 - [ ] `SET role_name = 'SYSADMIN';` - Confirm target role (default: SYSADMIN)
-- [ ] `SET warehouse_name = 'COMPUTE_WH';` - Update to your warehouse name
+
+**Note**: The agent uses the user's current warehouse context - no dedicated warehouse needed.
 
 ### 2. Email Configuration (Line ~242)
 - [ ] Replace `YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM` with valid email address
@@ -14,9 +15,9 @@ Before running `Snowflake_Assistant_setup.sql`, verify these configurations:
 
 ### 3. Prerequisites Verification
 - [ ] ACCOUNTADMIN role access confirmed
-- [ ] Target warehouse exists and is accessible
 - [ ] Cortex features enabled in account
 - [ ] Network access for Marketplace listings enabled
+- [ ] Users have access to at least one warehouse
 
 ## Deployment Steps
 
@@ -59,8 +60,8 @@ SHOW CORTEX SEARCH SERVICES IN DATABASE snowflake_documentation;
 - [x] ACCOUNTADMIN used only where required:
   - Account-level settings (CORTEX_ENABLED_CROSS_REGION)
   - Database role grants (SNOWFLAKE.CORTEX_USER)
-  - Legal terms acceptance
-- [x] Warehouse name parameterized (not hardcoded)
+  - Marketplace operations (legal terms, database import)
+- [x] Agent uses user's warehouse context (no dedicated warehouse = simpler permissions)
 - [x] All sensitive values documented as configuration variables
 
 ## Code Quality Standards Met

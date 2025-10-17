@@ -16,13 +16,13 @@
  *   - ACCOUNTADMIN role privileges
  *   - Cortex features enabled in the account
  *   - Email domain allow-listed for notification integrations
- *   - Existing warehouse for agent execution (default: COMPUTE_WH)
  * 
  * Configuration:
  *   Before running, update the following variables in the script:
  *   - SET role_name: Target role (default: SYSADMIN)
- *   - SET warehouse_name: Execution warehouse (default: COMPUTE_WH)
  *   - Email address in the test CALL statement (line ~200)
+ *   
+ *   Note: Agent uses the user's current warehouse context (no dedicated warehouse needed)
  * 
  * Security:
  *   - Uses SYSADMIN role following principle of least privilege
@@ -46,7 +46,6 @@ ALTER ACCOUNT SET CORTEX_ENABLED_CROSS_REGION = 'ANY_REGION';
 
 -- Configuration variables: Customize these for your environment
 SET role_name = 'SYSADMIN';
-SET warehouse_name = 'COMPUTE_WH';
 
 -- Grant Cortex access to PUBLIC role (allows all users to leverage Cortex features)
 GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE PUBLIC;
@@ -244,6 +243,12 @@ CALL snowflake_intelligence.tools.send_email(
     '<h1>Email Integration Test</h1><p>This is a test of the Snowflake Intelligence email notification system.</p>'
 );
 
+-- =============================================================================
+-- MARKETPLACE LISTING (Requires ACCOUNTADMIN)
+-- =============================================================================
+-- Switch to ACCOUNTADMIN for marketplace operations
+USE ROLE ACCOUNTADMIN;
+
 -- Accept legal terms for Snowflake Documentation marketplace listing
 CALL SYSTEM$ACCEPT_LEGAL_TERMS('DATA_EXCHANGE_LISTING', 'GZSTZ67BY9OQ4');
 
@@ -254,11 +259,12 @@ CREATE OR REPLACE DATABASE snowflake_documentation
 -- Grant PUBLIC role access to Snowflake Documentation
 GRANT IMPORTED PRIVILEGES ON DATABASE snowflake_documentation TO ROLE PUBLIC;
 
--- Switch to the role for agent creation
+-- Switch back to the configured role for agent creation
 USE ROLE identifier($role_name);
 USE snowflake_intelligence.agents;
 
 -- Create the Snowflake Intelligence Agent with integrated tools
+-- Uses dedicated snowflake_intelligence_wh warehouse
 CREATE OR REPLACE AGENT snowflake_intelligence.agents.snowflake_assistant_v2
 WITH PROFILE = '{ "display_name": "Snowflake Assistant" }'
 COMMENT = 'AI-powered Snowflake Cost and Performance Assistant for query optimization and performance analysis'
@@ -269,11 +275,11 @@ FROM SPECIFICATION $$
         "response": "You are a Snowflake Data Engineer Assistant. Always provide specific recommendations with clear next steps, actual metrics from query history data, prioritized solutions (high-impact first), and Snowflake best practices (Gen 2 warehouses, clustering, modern SQL).",
         "orchestration": "Orchestration Instruction:\nFor query performance analysis requests:\n1. Query the semantic view to identify relevant queries, performance metrics, and patterns.\n2. Analyze execution times, compilation times, bytes scanned, and warehouse usage.\n3. Prioritize findings by impact (slowest queries, highest resource usage, most frequent errors).\n4. Use Snowflake documentation search to reference best practices and specific features.\n5. Provide specific, actionable recommendations with clear next steps.\n\nFor optimization questions:\n1. Start with the query history data to understand current performance.\n2. Identify bottlenecks and inefficiencies in the data.\n3. Reference Snowflake documentation for feature recommendations (Gen 2 warehouses, clustering, etc.).\n4. Provide concrete optimization steps with expected improvements.\n\nFor troubleshooting:\n1. Analyze error patterns and compilation issues from query history.\n2. Search documentation for specific error resolution guidance.\n3. Provide step-by-step fixes and prevention strategies.\n\nAlways ground recommendations in actual data from the user's query history.",
         "sample_questions": [
-            { "question": "Based on my top 10 slowest queries, can you provide ways to optimize them?"},        
+            { "question": "Based on my top 10 slowest queries, can you provide ways to optimize them?" },
             { "question": "What was the query that is causing performance issues?" },
             { "question": "Which warehouses should be upgraded to Gen 2?" },
             { "question": "What queries are scanning the most data and how can I reduce that?" },
-            { "question": "Send email to me" }            
+            { "question": "Send email to me" }
         ]
     },
     "tools": [
@@ -298,11 +304,7 @@ FROM SPECIFICATION $$
                             "type": "string"
                         }
                     },
-                    "required": [
-                        "body",
-                        "recipient_email",
-                        "subject"
-                    ]
+                    "required": ["body", "recipient_email", "subject"]
                 }
             }
         },
@@ -329,21 +331,14 @@ FROM SPECIFICATION $$
             "name": "SNOWFLAKE_DOCUMENTATION.SHARED.CKE_SNOWFLAKE_DOCS_SERVICE"
         },
         "snowflake_query_history": {
-            "semantic_view": "snowflake_intelligence.tools.snowflake_query_history",
-            "execution_environment": {
-                "type": "warehouse",
-                "warehouse": "${warehouse_name}",
-                "query_timeout": 60
-            }
+            "semantic_view": "snowflake_intelligence.tools.snowflake_query_history"
         },
         "cortex_email_tool": {
             "identifier": "snowflake_intelligence.tools.send_email",
             "name": "SEND_EMAIL(VARCHAR, VARCHAR, VARCHAR)",
             "type": "procedure",
             "execution_environment": {
-                "type": "warehouse",
-                "warehouse": "${warehouse_name}",
-                "query_timeout": 60
+                "type": "warehouse"
             }
         }
     }

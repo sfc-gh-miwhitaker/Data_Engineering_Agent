@@ -1,0 +1,157 @@
+# Snowflake Intelligence Agent - Git Ignore Configuration
+
+# =============================================================================
+# Sensitive Configuration Files
+# =============================================================================
+# Never commit credentials, secrets, or environment-specific configurations
+*.env
+.env.*
+config.local.yml
+config.local.yaml
+secrets.yml
+secrets.yaml
+credentials.json
+snowflake_credentials.txt
+connection_config.ini
+
+# =============================================================================
+# Snowflake-Specific Files
+# =============================================================================
+# Snowflake connection profiles and cache
+.snowflake/
+snowflake_connection_cache/
+*.snowsql_config
+
+# =============================================================================
+# Python Artifacts
+# =============================================================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+virtualenv/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+.eggs/
+*.egg
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.pytest_cache/
+
+# =============================================================================
+# IDE and Editor Files
+# =============================================================================
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs (PyCharm, IntelliJ, DataGrip)
+.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# =============================================================================
+# Operating System Files
+# =============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# =============================================================================
+# Temporary Files and Logs
+# =============================================================================
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.~lock.*
+
+# Application logs
+logs/
+*.log.*
+
+# Diagnostic and fix scripts (generated utilities)
+check_*.sql
+fix_*.sql
+
+# =============================================================================
+# Internal Project Documentation
+# =============================================================================
+# Internal notes and development tracking (per project rules)
+.cursornotes/
+.internal/
+notes.txt
+TODO.local.md
+
+# =============================================================================
+# Backup and Archive Files
+# =============================================================================
+*.bak
+*.backup
+*.old
+*.orig
+
+# =============================================================================
+# Data Files (if any test data gets added)
+# =============================================================================
+# Never commit actual data files
+*.csv
+*.parquet
+*.avro
+*.json
+*.xlsx
+*.xls
+# Exception: Allow sample/fixture data in specific directories
+!tests/fixtures/*.csv
+!tests/fixtures/*.json
+
+# =============================================================================
+# Deployment and CI/CD Artifacts
+# =============================================================================
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# =============================================================================
+# Documentation Build Artifacts
+# =============================================================================
+# If using documentation generators
+_build/
+.doctrees/
+site/
+
