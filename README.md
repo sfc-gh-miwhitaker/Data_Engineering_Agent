@@ -77,7 +77,6 @@ Data_Engineering_Agent/
 │   ├── ROLE_BASED_ACCESS.md         # Restrict access to specific teams/roles
 │   ├── TESTING.md                   # Validation procedures and test scenarios
 │   └── TROUBLESHOOTING.md           # Common issues and solutions
-└── archive/                         # Previous versions
 ```
 
 ## Enhanced Agent (Optional)
