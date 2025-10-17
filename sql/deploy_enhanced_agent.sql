@@ -25,10 +25,12 @@
  *   5. Keeps original agent for comparison
  * 
  * Configuration:
- *   Update lines 47-48 with your role and warehouse preferences
+ *   Line 45: SET role_name (default: SYSADMIN)
+ *   Note: Agent uses user's warehouse context automatically
  * 
  * Author: Snowflake Community
- * Version: 1.0
+ * Modified: 2025-10-17
+ * Version: 2.3
  * License: Apache 2.0
  * 
  * Usage:
@@ -133,23 +135,22 @@ WITH EXTENSION (CA = '{"verified_queries":[{"name":"Most expensive warehouses la
 
 CREATE OR REPLACE SEMANTIC VIEW snowflake_intelligence.tools.warehouse_operations
 TABLES (
-    SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_LOAD_HISTORY,
-    SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_METERING_HISTORY
+    SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_LOAD_HISTORY
 )
 FACTS (
   WAREHOUSE_LOAD_HISTORY.AVG_RUNNING as AVG_RUNNING comment='Average concurrent queries. Synonyms: concurrency, active queries.',
   WAREHOUSE_LOAD_HISTORY.AVG_QUEUED_LOAD as AVG_QUEUED_LOAD comment='Average queued queries. Synonyms: queue depth, waiting queries.',
   WAREHOUSE_LOAD_HISTORY.AVG_QUEUED_PROVISIONING as AVG_QUEUED_PROVISIONING comment='Average provisioning queue. Synonyms: startup queue.',
-  WAREHOUSE_LOAD_HISTORY.AVG_BLOCKED as AVG_BLOCKED comment='Average blocked queries. Synonyms: contentions.',
-  WAREHOUSE_METERING_HISTORY.CREDITS_USED as CREDITS_USED comment='Credits for cost correlation. Synonyms: warehouse cost.'
+  WAREHOUSE_LOAD_HISTORY.AVG_BLOCKED as AVG_BLOCKED comment='Average blocked queries. Synonyms: contentions.'
 )
 DIMENSIONS (
   WAREHOUSE_LOAD_HISTORY.WAREHOUSE_NAME as WAREHOUSE_NAME comment='Warehouse name. Synonyms: compute cluster.',
-  WAREHOUSE_LOAD_HISTORY.START_TIME as LOAD_START_TIME comment='Measurement period start.',
-  WAREHOUSE_LOAD_HISTORY.END_TIME as LOAD_END_TIME comment='Measurement period end.'
+  WAREHOUSE_LOAD_HISTORY.WAREHOUSE_ID as WAREHOUSE_ID comment='Warehouse identifier.',
+  WAREHOUSE_LOAD_HISTORY.START_TIME as START_TIME comment='Measurement period start. Synonyms: load start time.',
+  WAREHOUSE_LOAD_HISTORY.END_TIME as END_TIME comment='Measurement period end. Synonyms: load end time.'
 )
 COMMENT = 'Warehouse utilization and capacity planning metrics. Ask about warehouse sizing, queue times, and utilization patterns.'
-WITH EXTENSION (CA = '{"verified_queries":[{"name":"Warehouses with high queues","question":"Which warehouses have the most queued queries?","sql":"SELECT warehouse_name, AVG(avg_queued_load) as avg_queue_depth FROM warehouse_operations WHERE load_start_time >= DATEADD(DAY, -7, CURRENT_TIMESTAMP()) GROUP BY warehouse_name HAVING avg_queue_depth > 0 ORDER BY avg_queue_depth DESC"}]}');
+WITH EXTENSION (CA = '{"verified_queries":[{"name":"Warehouses with high queues","question":"Which warehouses have the most queued queries?","sql":"SELECT warehouse_name, AVG(avg_queued_load) as avg_queue_depth FROM warehouse_operations WHERE start_time >= DATEADD(DAY, -7, CURRENT_TIMESTAMP()) GROUP BY warehouse_name HAVING avg_queue_depth > 0 ORDER BY avg_queue_depth DESC"}]}');
 
 
 -- =============================================================================
@@ -204,30 +205,32 @@ GRANT USAGE ON AGENT snowflake_intelligence.agents.snowflake_assistant_enhanced 
 -- =============================================================================
 
 
--- Check semantic views
+-- Check semantic views (should show 4 total: original + 3 enhanced)
 SHOW SEMANTIC VIEWS IN SCHEMA snowflake_intelligence.tools;
 
 -- Check agents (should see both original and enhanced)
 SHOW AGENTS IN DATABASE snowflake_intelligence;
 
--- Test semantic views
-SELECT COUNT(*) as row_count FROM snowflake_intelligence.tools.query_performance LIMIT 1;
-
-SELECT COUNT(*) as row_count FROM snowflake_intelligence.tools.cost_analysis LIMIT 1;
-
-SELECT COUNT(*) as row_count FROM snowflake_intelligence.tools.warehouse_operations LIMIT 1;
+-- Note: Semantic views cannot be queried directly with SQL
+-- They are designed to be used by Cortex Analyst (the agent's text-to-SQL tool)
+-- Test them by asking the agent questions like:
+--   "What are my slowest queries today?"
+--   "Which warehouses are costing the most?"
+--   "Show me warehouses with high queue times"
 
 -- =============================================================================
--- DEPLOYMENT SUMMARY
+-- DEPLOYMENT COMPLETE
 -- =============================================================================
-
-
-SELECT 
-    'Enhanced Snowflake Intelligence Agent deployed successfully!' as message,
-    'Next steps:' as action,
-    '1. Test in Snowsight: AI & ML > Agents > snowflake_assistant_enhanced' as step1,
-    '2. Compare responses vs original agent (snowflake_assistant_v2)' as step2,
-    '3. Try sample questions from different domains (performance, cost, capacity)' as step3;
+--
+-- Next Steps:
+-- 1. Navigate to Snowsight: AI & ML > Agents
+-- 2. Select "Snowflake Assistant (Enhanced)"
+-- 3. Test with sample questions (see below)
+--
+-- You now have TWO agents for comparison:
+-- - snowflake_assistant_v2 (original, single semantic view)
+-- - snowflake_assistant_enhanced (new, three domain-specific views)
+-- =============================================================================
 
 /*
 SAMPLE QUESTIONS TO TEST:

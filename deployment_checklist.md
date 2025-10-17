@@ -1,5 +1,8 @@
 # Pre-Deployment Checklist
 
+**Version**: 2.3  
+**Last Updated**: 2025-10-17
+
 ## Required Configuration Changes
 
 Before running `Snowflake_Assistant_setup.sql`, verify these configurations:
@@ -9,9 +12,10 @@ Before running `Snowflake_Assistant_setup.sql`, verify these configurations:
 
 **Note**: The agent uses the user's current warehouse context - no dedicated warehouse needed.
 
-### 2. Email Configuration (Line ~242)
+### 2. Email Configuration (Line 241)
 - [ ] Replace `YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM` with valid email address
 - [ ] Confirm email domain is allow-listed in Snowflake notification settings
+- [ ] Test email delivery after deployment
 
 ### 3. Prerequisites Verification
 - [ ] ACCOUNTADMIN role access confirmed
@@ -78,8 +82,14 @@ SHOW CORTEX SEARCH SERVICES IN DATABASE snowflake_documentation;
 ## Support Information
 
 **License:** Apache 2.0  
-**Support:** Community-supported, use at your own risk  
+**Support:** Community-supported  
 **Original Author:** Kaitlyn Wells (@snowflake)  
-**Modified:** 2025-10-08  
-**Version:** 2.0
+**Modified:** 2025-10-17  
+**Version:** 2.3
+
+## Additional Resources
+
+- `help/TESTING.md` - Comprehensive testing procedures
+- `help/TROUBLESHOOTING.md` - Common issues and solutions
+- `help/ENHANCED_AGENT_README.md` - Enhanced agent deployment guide
 

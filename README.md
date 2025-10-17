@@ -1,5 +1,9 @@
 # Snowflake Data Engineering Agent
 
+**Version**: 2.3  
+**License**: Apache 2.0  
+**Status**: Production Ready
+
 A comprehensive AI-powered assistant for Snowflake data engineering optimization and performance analysis.
 
 ## Overview
@@ -22,22 +26,22 @@ This project provides a complete setup for deploying a Snowflake Intelligence Ag
 
 - Snowflake account with `ACCOUNTADMIN` privileges
 - Ability to install Marketplace listings (the script automates installation of the Snowflake Documentation Knowledge Extension)
-- Outbound email domain allow-listed for Snowflake notification integrations (update the script with your target address)
+- Outbound email domain allow-listed for Snowflake notification integrations
 - Users must have an active warehouse to run agent queries (agent uses user's current warehouse context)
 
 ## Quick Start
  
 1. **Review and Configure the Setup Script**
    - Open `Snowflake_Assistant_setup.sql`
-   - Update configuration variables (lines 48-49):
-     - `SET role_name = 'SYSADMIN';` (or your preferred role)
-     - `SET warehouse_name = 'COMPUTE_WH';` (or your existing warehouse)
-   - Replace `YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM` (line ~201) with your email address
+   - **Line 49**: Update `SET role_name` if needed (default: SYSADMIN)
+   - **Line 241**: Replace `YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM` with your email
+   - **Important**: Ensure you have an active warehouse before running
 
 2. **Execute the Script as ACCOUNTADMIN**
    - Sign in to Snowsight as a user with the `ACCOUNTADMIN` role
-   - Run the entire script in the Worksheets UI
-   - The script is idempotent and handles role grants, Marketplace installation, and agent provisioning
+   - Run the entire `Snowflake_Assistant_setup.sql` in the Worksheets UI
+   - Script is idempotent (safe to re-run)
+   - Takes approximately 2-3 minutes to complete
 
 3. **Verify the Deployment**
    - Confirm the `snowflake_intelligence` database and `snowflake_assistant_v2` agent exist
@@ -48,21 +52,9 @@ This project provides a complete setup for deploying a Snowflake Intelligence Ag
 
 - **snowflake_intelligence** database with `agents` and `tools` schemas (managed by `SYSADMIN` role)
 - Semantic view `snowflake_intelligence.tools.snowflake_query_history` combining query and attribution history
-- AI agent `snowflake_intelligence.agents.snowflake_assistant_v2` pre-configured with Cortex Analyst, Cortex Search, and email tooling
-- Notification integration `email_integration` and supporting stored procedure for HTML email delivery
-- Marketplace import of the Snowflake Documentation corpus (`snowflake_documentation` database)
-- All objects use `SYSADMIN` role following the principle of least privilege
-
-## Usage Examples
-
-Once deployed, you can ask your Data Engineer Assistant questions like:
-
-- "Based on my top 10 slowest queries, can you provide ways to optimize them?"
-- "Which warehouses should be upgraded to Gen 2?"
-- "Show me queries with compilation errors and how to fix them"
-- "What queries are scanning the most data and how can I reduce that?"
-- "Would my query benefit from Query Acceleration or Search Optimization Service?"
-- "Send email to me summarizing the optimization plan"
+- Cortex Search service integration with Snowflake Documentation from Marketplace
+- Email notification stored procedure (`send_email`)
+- Agent `snowflake_assistant_v2` with integrated tools (Cortex Analyst, Cortex Search, Email)
 
 ## Project Structure
 
@@ -81,8 +73,10 @@ Data_Engineering_Agent/
 │   ├── TROUBLESHOOTING.md          # Common issues and solutions
 │   ├── ENHANCEMENT_RECOMMENDATIONS.md  # Optional improvements
 │   ├── ENHANCED_AGENT_README.md    # Enhanced agent documentation
-│   └── RELEASE_NOTES_v2.1.md       # Release notes for v2.1
+│   ├── RELEASE_NOTES_v2.1.md       # v2.1 release notes
+│   └── CHANGELOG_v2.2.md           # v2.2-2.3 changelog
 ├── .cursornotes/                   # Internal development notes (not committed)
+│   └── project_notes.md
 └── archive/                        # Previous versions
 ```
 
@@ -97,22 +91,120 @@ For improved performance and natural language understanding, deploy the **Enhanc
 
 See `help/ENHANCED_AGENT_README.md` for details and deployment instructions.
 
+## Usage
+
+### Access the Agent
+
+1. Navigate to Snowsight: **AI & ML > Agents**
+2. Select **Snowflake Assistant**
+3. Start asking questions in natural language
+
+### Sample Questions
+
+```
+"What are my top 10 slowest queries today?"
+"Which warehouses should be upgraded to Gen 2?"
+"Show me queries that are scanning the most data"
+"What queries are failing with compilation errors?"
+"Send me an email summary of query performance"
+```
+
+### Understanding the Responses
+
+The agent provides:
+- **Data-driven insights**: Based on your actual query history
+- **Specific recommendations**: Actionable next steps with clear instructions
+- **Prioritized solutions**: High-impact optimizations first
+- **Snowflake best practices**: Modern features and approaches
+- **Documentation links**: References to official Snowflake docs
+
+## Architecture
+
+### Key Components
+
+1. **Semantic Views**: Define queryable data models for Cortex Analyst
+2. **Cortex Analyst**: Converts natural language to SQL queries
+3. **Cortex Search**: Searches Snowflake documentation for best practices
+4. **Custom Tools**: Email integration via stored procedure
+
+### Data Flow
+
+```
+User Question → Agent → Tool Selection → Data Query → Analysis → Response
+                  ↓
+            Cortex Analyst (Text-to-SQL)
+            Cortex Search (Documentation)
+            Custom Procedure (Email)
+```
+
+### Warehouse Usage
+
+The agent uses the user's current warehouse context. Users control compute costs through their own warehouse selection and sizing.
+
 ## Security Considerations
 
-- The script uses `SYSADMIN` role following the principle of least privilege
-- SQL injection protection implemented in the Python email procedure
-- All user inputs are escaped before being passed to system procedures
-- `PUBLIC` role is granted `USAGE` only (not ownership or modification rights)
-- Review the email integration security requirements for your organization
+- **Principle of Least Privilege**: Uses SYSADMIN role for most operations, ACCOUNTADMIN only where required
+- **No Hardcoded Credentials**: All authentication via Snowflake roles
+- **SQL Injection Protection**: All inputs properly escaped in stored procedure
+- **Read-Only Access**: Agent queries ACCOUNT_USAGE views (read-only)
+- **User Isolation**: Each user's queries run under their own privileges
+
+## Troubleshooting
+
+See `help/TROUBLESHOOTING.md` for detailed troubleshooting guidance.
+
+Common issues:
+- **No warehouse specified**: Ensure you have an active warehouse before using the agent
+- **Permission errors**: Verify ACCOUNTADMIN role for deployment, PUBLIC role for users
+- **Marketplace access**: Requires network access and legal terms acceptance
+- **Email not working**: Verify email domain is allow-listed in notification integration
+
+## Testing
+
+See `help/TESTING.md` for comprehensive testing procedures and validation steps.
+
+## Cleanup
+
+To remove all deployed resources:
+
+```sql
+-- Execute teardown_script.sql as ACCOUNTADMIN
+-- This removes agents, semantic views, and other project objects
+-- The script is safe by default - preserves shared databases/schemas
+```
+
+## Version History
+
+- **v2.3** (2025-10-17): Simplified warehouse management - uses user's warehouse context
+- **v2.2** (2025-10-17): Dedicated warehouse architecture (deprecated)
+- **v2.1** (2025-10-14): Enhanced agent with domain-specific semantic views
+- **v2.0** (2025-10-08): Initial production release
+
+See `help/CHANGELOG_v2.2.md` for detailed change history.
+
+## Contributing
+
+This is a community project. Contributions welcome!
+
+1. Follow existing code style (see project rules)
+2. Test changes thoroughly
+3. Update documentation
+4. Submit pull requests with clear descriptions
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+Apache License 2.0 - see LICENSE file for details.
 
 ## Support
 
-None - use at your own risk. This is community-supported code.
+- **Documentation**: See `help/` directory
+- **Issues**: Submit via GitHub issues
+- **Community**: Snowflake Community forums
 
-## Acknowledgments
+## Credits
 
-Special thanks to Kaitlyn Wells (@snowflake) for the original implementation that serves as the foundation for this customer-ready version.
+Based on original work by Kaitlyn Wells (@snowflake). Enhanced and productionized by the Snowflake community.
+
+---
+
+**Ready to deploy?** Start with `deployment_checklist.md` to ensure all prerequisites are met!

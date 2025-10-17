@@ -18,9 +18,9 @@
  *   - Email domain allow-listed for notification integrations
  * 
  * Configuration:
- *   Before running, update the following variables in the script:
- *   - SET role_name: Target role (default: SYSADMIN)
- *   - Email address in the test CALL statement (line ~200)
+ *   Before running, update the following in the script:
+ *   - Line 49: SET role_name (default: SYSADMIN - change if using different role)
+ *   - Line 241: Replace 'YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM' with your email
  *   
  *   Note: Agent uses the user's current warehouse context (no dedicated warehouse needed)
  * 
@@ -30,8 +30,8 @@
  *   - Grants PUBLIC access to view agents (not modify)
  * 
  * Author: Based on work by Kaitlyn Wells (@snowflake)
- * Modified: 2025-10-08
- * Version: 2.0
+ * Modified: 2025-10-17
+ * Version: 2.3
  * License: Apache 2.0
  * 
  * Usage:
