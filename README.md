@@ -61,7 +61,6 @@ This project provides a complete setup for deploying a Snowflake Intelligence Ag
 ```
 Data_Engineering_Agent/
 ├── .gitignore                       # Git ignore rules for sensitive files
-├── .cursorrules_template            # Reusable coding standards template
 ├── LICENSE                          # Apache 2.0 license
 ├── README.md                        # This file
 ├── Snowflake_Assistant_setup.sql    # Full automation script for agent deployment
