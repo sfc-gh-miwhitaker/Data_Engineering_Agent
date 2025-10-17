@@ -77,8 +77,6 @@ Data_Engineering_Agent/
 │   ├── ROLE_BASED_ACCESS.md         # Restrict access to specific teams/roles
 │   ├── TESTING.md                   # Validation procedures and test scenarios
 │   └── TROUBLESHOOTING.md           # Common issues and solutions
-├── .cursornotes/                    # Internal development notes (not committed)
-│   └── project_notes.md
 └── archive/                         # Previous versions
 ```
 
