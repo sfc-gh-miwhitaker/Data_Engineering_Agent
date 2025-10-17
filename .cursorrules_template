@@ -1,0 +1,457 @@
+# Cursor AI Coding Rules Template
+# Copy this to .cursorrules in your project root
+# Last Updated: 2025-10-17
+
+# =============================================================================
+# PROJECT ORGANIZATION & FILE MANAGEMENT
+# =============================================================================
+
+## Documentation Location
+- Keep all *.md files (except README) in a `help/` folder
+- README.md stays in project root
+- Internal notes go in `.cursornotes/` (add to .gitignore)
+
+## No Duplicate Files
+- NEVER create files with both old and new versions in the same directory
+- When refactoring, ALWAYS delete old files before creating new ones
+- When renaming files, use move/rename operations, not create + keep old
+- One source of truth per component
+
+## Critical Rule: No Duplicate Files (Enforcement)
+NEVER create duplicate versions of the same file. This includes:
+- Backup copies (file.bak, file_old, file_v2)
+- Numbered versions (file_01, file_02)
+- Dated versions (file_20231015)
+- Any redundant implementations
+
+When updating: Edit in place or delete old before creating new.
+
+# =============================================================================
+# SQL STANDARDS
+# =============================================================================
+
+## SQL Formatting Rules
+- Keywords: UPPERCASE (`SELECT`, `FROM`, `WHERE`)
+- Identifiers: lowercase_snake_case (`customer_id`, `order_date`)
+- Line length: Max 99 characters
+- Indentation: 4 spaces, no tabs
+- One SELECT statement per file for clarity
+
+## SQL Quality Standards
+- No message-only SELECT statements (e.g., `SELECT 'Status message' as status;`)
+- SELECT statements must provide analytical value (data, counts, aggregations)
+- Use SQL comments instead of SELECT for messages
+- Exception: Configuration display queries (CURRENT_ROLE, CURRENT_WAREHOUSE) are allowed
+
+## Naming Conventions (Environment-Aware)
+Pattern: `SYSTEM_<ENV>_<FUNCTION>_<OBJECT>`
+
+| Object Type | Pattern | Example |
+|-------------|---------|---------|
+| Database | `SYSTEM_DOMAIN` | `SNOWFLAKE_INTELLIGENCE` |
+| Schema | `<FUNCTION>_<DOMAIN>` | `TRANSFORM_SALES` |
+| Tables | `<LAYER>_<ENTITY>` | `STG_CUSTOMERS`, `FCT_REVENUE` |
+| Views | `V_<DESCRIPTION>` | `V_ACTIVE_USERS_MTD` |
+
+Names must immediately communicate purpose, environment, and data maturity level.
+
+# =============================================================================
+# CODE QUALITY & STYLE
+# =============================================================================
+
+## Emoji Policy
+- Avoid emojis in code files unless explicitly requested by user
+- OK in markdown documentation if enhancing clarity
+- Never in SQL, Python, or other code files
+
+## Documentation Standards
+### Required Documentation
+- `README.md`: Project overview, setup instructions
+- Inline code comments for business logic (WHY, not WHAT)
+- Data dictionary for all tables/columns
+- Architecture diagrams for complex workflows
+
+### Comment Quality
+- Explain business logic and decisions
+- Document non-obvious choices
+- Don't comment obvious syntax
+- Include data lineage in SQL files
+
+## Code Organization
+Organize by function/domain, not execution order:
+```
+project_root/
+├── .gitignore
+├── README.md
+├── config/           # Environment configurations
+├── sql/             # SQL transformations
+├── python/          # Structured Python package
+├── streamlit/       # Structured streamlit app files
+├── data_quality/    # Data validation rules
+├── help/            # Documentation
+└── docs/            # Additional documentation
+```
+
+# =============================================================================
+# DOCUMENTATION-FIRST APPROACH
+# =============================================================================
+
+## Critical Rule: Always Verify with Documentation
+
+**Date Added**: October 14, 2025  
+**Reason**: Provided incorrect information without checking official docs
+
+### The Documentation-First Rule
+
+**When working with any external API, library, framework, or platform feature:**
+
+### ❌ NEVER:
+1. Make assumptions about syntax, availability, or behavior
+2. Provide "helpful" warnings or workarounds without verifying they're needed
+3. Tell the user something is unavailable or requires special access without checking
+4. Rely on potentially outdated knowledge without verification
+
+### ✅ ALWAYS:
+1. **CHECK THE DOCUMENTATION FIRST** - Even if you think you know the answer
+2. Search for official documentation when encountering errors
+3. Verify syntax and availability before providing solutions
+4. State clearly when you're uncertain: "Let me check the documentation..."
+5. Cite sources when providing technical information
+
+### Red Flags That Should Trigger Documentation Check:
+1. ❌ "This feature isn't available..."
+2. ❌ "You need special access for..."
+3. ❌ "Contact your account team to enable..."
+4. ❌ "This requires a preview feature flag..."
+5. ❌ Any claim about availability without verification
+
+### Phrases to Use Instead:
+1. ✅ "Let me check the official documentation..."
+2. ✅ "According to [source], the syntax is..."
+3. ✅ "The documentation shows this feature is GA as of [date]..."
+4. ✅ "I need to verify this - one moment..."
+5. ✅ "I'm not certain about this, let me look it up..."
+
+### The Trust Contract
+**As an AI Assistant:**
+1. **Accuracy > Speed**: Better to check docs than give instant wrong answers
+2. **Honesty > Authority**: "I don't know, let me check" > Confident misinformation
+3. **Verification > Memory**: Always verify syntax against current documentation
+4. **Sources > Assumptions**: Cite official sources, not assumptions
+
+### Enforcement
+Before providing ANY of these, CHECK DOCUMENTATION:
+- [ ] Feature availability ("this requires X")
+- [ ] Syntax examples (especially for complex APIs)
+- [ ] Version requirements ("available in version X")
+- [ ] Access requirements ("requires special permissions")
+- [ ] Deprecated features ("this is now deprecated")
+- [ ] Best practices ("the recommended approach is")
+
+# =============================================================================
+# PROJECT SPECIFIC STANDARDS
+# =============================================================================
+
+## Snowflake Intelligence & Cortex Agent Best Practices
+
+### Agent Configuration
+- Prefer MCP tools over web searches when researching Snowflake
+- Write effective tool descriptions (most critical factor for agent quality)
+- Use domain-specific semantic views for better performance
+- Add synonyms to semantic views for natural language understanding
+
+### Tool Descriptions (Critical)
+Tool descriptions are the MOST important factor in agent quality. They must:
+1. Start with clear, specific names
+2. Include [What it does] + [What data] + [When to use] + [When NOT to use]
+3. Be explicit about parameters (type, format, examples, how to obtain)
+4. Include business context and domain terminology
+
+### Semantic Views
+- One semantic view per domain/table or naturally joined tables
+- Cannot be queried with direct SQL SELECT statements
+- Designed exclusively for Cortex Analyst (text-to-SQL)
+- Test by asking the agent, not by running SQL queries
+
+## Scheduling & Automation
+For any non-dynamic view, include in the project:
+- A scheduling script that creates a Snowflake TASK
+- Task should update the view IF supporting data exists in SNOWFLAKE database
+- Always include a cleanup script to remove deployed items
+
+## Streamlit Applications
+- Keep each Streamlit app in a separate folder
+- Include dependencies file (requirements.txt)
+- Document configuration requirements
+
+# =============================================================================
+# VERSION CONTROL & GIT
+# =============================================================================
+
+## Commit Standards
+- All changes via pull requests (when applicable)
+- Code review required before merge
+- Meaningful commit messages
+- Never commit credentials or secrets
+
+## What NOT to Commit
+- Internal notes (use .cursornotes/)
+- Temporary/diagnostic files (add to .gitignore)
+- Credentials or API keys
+- Environment-specific configuration
+- Binary files or generated artifacts
+
+## .gitignore Must Include
+```gitignore
+# Internal project documentation (per project rules)
+.cursornotes/
+
+# Diagnostic and fix scripts (generated utilities)
+check_*.sql
+fix_*.sql
+
+# Environment files
+.env
+.env.local
+*.env
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+```
+
+# =============================================================================
+# STATUS TERMINOLOGY - COMMUNITY STANDARDS
+# =============================================================================
+
+## Rule: Avoid Liability Language
+
+**Date Added**: 2025-10-17  
+**Reason**: Avoid liability implications of production-readiness claims
+
+### ❌ PROHIBITED Terminology
+**Never use these terms** for project status:
+- "Production Ready"
+- "Production Guaranteed"
+- "Production Certified"
+- "Warranty" or "Guaranteed"
+- "SLA" or "Service Level Agreement" (unless actually contracted)
+- Any language implying legal commitments or warranties
+
+### ✅ APPROVED Terminology
+**Always use instead**:
+- **"Community Ready"** (preferred for open-source projects)
+- "Community Supported"
+- "Tested and Validated"
+- "Ready for Deployment"
+- "Enterprise-Grade Quality" (describing quality, not commitment)
+- "Thoroughly Tested"
+
+### Required Disclaimer
+**Always include in README and release notes:**
+```markdown
+**Disclaimer**: This is community-supported software. While thoroughly tested, 
+it is provided "as-is" without warranties or guarantees. Users are responsible 
+for testing in their own environments before production use. See LICENSE for 
+full terms.
+```
+
+### Status Badge Format
+```markdown
+**Version**: X.X  
+**License**: Apache 2.0  
+**Status**: Community Ready
+```
+
+### Rationale
+1. **Legal Protection**: "Production Ready" implies warranties we cannot provide
+2. **Honest Communication**: Sets correct expectations for community projects
+3. **License Alignment**: Consistent with Apache 2.0 "AS IS" terms
+4. **Community Standards**: Aligns with open-source best practices
+
+# =============================================================================
+# SECURITY STANDARDS
+# =============================================================================
+
+## Security Requirements
+- Encrypt connections (SSL/TLS)
+- Use service accounts, not personal credentials
+- Implement role-based access control
+- Audit data access patterns
+- Mask/tokenize PII in non-production environments
+- Follow principle of least privilege
+- No secrets in code or logs
+- Regular security updates
+
+# =============================================================================
+# DATA QUALITY & VALIDATION
+# =============================================================================
+
+## Multi-Layer Validation
+
+### Layer 1 - Basic Integrity
+```sql
+-- Check for duplicates
+-- Check for nulls in required fields
+-- Validate data types
+```
+
+### Layer 2 - Business Rules
+```python
+# Validate value ranges
+# Check referential integrity
+# Verify business constraints
+```
+
+### Layer 3 - Statistical Monitoring
+- Track row counts, null percentages, distributions
+- Alert on significant changes from historical patterns
+- Document expected data ranges and formats
+
+# =============================================================================
+# PYTHON STANDARDS
+# =============================================================================
+
+## Package Structure
+- All Python code in installable package structure
+- Use virtual environments (venv)
+- Environment variables for all credentials
+- Unit tests for business logic functions
+- Type hints for function signatures
+
+## Best Practices
+```python
+# Use clear imports
+from myproject.transformations import data_processor
+
+# Environment configuration (never hardcode)
+import os
+SNOWFLAKE_ACCOUNT = os.getenv('SNOWFLAKE_ACCOUNT')
+
+# Type hints
+def process_data(input_df: pd.DataFrame) -> pd.DataFrame:
+    """Process the input dataframe."""
+    pass
+```
+
+# =============================================================================
+# TESTING & DEPLOYMENT
+# =============================================================================
+
+## Testing Requirements
+- Unit tests for business logic
+- Integration tests for data pipelines
+- Manual testing procedures documented
+- Test coverage documented
+
+## Deployment Standards
+- Use deployment checklist
+- All changes via version control
+- Rollback plan for every deployment
+- Document all prerequisites
+- Scripts must be idempotent
+
+# =============================================================================
+# TOOL USAGE PREFERENCES
+# =============================================================================
+
+## When to Use What
+- Use specialized file tools instead of terminal commands for file operations
+- Don't use cat/head/tail to read files (use read_file)
+- Don't use sed/awk to edit files (use search_replace)
+- Don't use cat with heredoc or echo redirection to create files (use write)
+- Reserve terminal commands exclusively for actual system commands
+
+## Parallel Tool Calls
+- Make independent tool calls in parallel when possible
+- Prioritize calling tools simultaneously for efficiency
+- Don't call dependent tools in parallel (wait for dependencies)
+- Never use placeholders in tool calls
+
+# =============================================================================
+# PROJECT DELIVERABLES
+# =============================================================================
+
+## Required for All Projects
+1. README.md with clear setup instructions
+2. LICENSE file (typically Apache 2.0)
+3. .gitignore with comprehensive rules
+4. requirements.txt or equivalent dependency file
+5. Deployment checklist
+6. Cleanup/teardown script
+7. Testing documentation
+8. Troubleshooting guide
+
+## Optional but Recommended
+- Architecture diagrams
+- Data flow diagrams
+- API documentation
+- Sample data or test fixtures
+- Performance benchmarks
+- Video walkthroughs
+
+# =============================================================================
+# COMMUNICATION STYLE
+# =============================================================================
+
+- Be direct and clear
+- Lead with the answer, then provide supporting details
+- Use active voice
+- Avoid hedging language when stating facts
+- Cite sources when providing technical information
+- Admit uncertainty when appropriate
+- Don't mention tool names to users (describe what you're doing instead)
+
+# =============================================================================
+# MAINTENANCE STANDARDS
+# =============================================================================
+
+## Code Must Be
+- Modular and organized by function
+- Easy to update and extend
+- Well-documented with clear separation of concerns
+- Dependencies clearly documented
+- Version controlled with clear versioning strategy
+
+## Documentation Must Be
+- Up to date with code changes
+- Accurate with verified line numbers and references
+- Comprehensive covering all features
+- Organized logically in help/ folder
+- Include troubleshooting and testing guides
+
+# =============================================================================
+# ERROR HANDLING
+# =============================================================================
+
+## When Errors Occur
+1. Read the error message carefully
+2. Check official documentation first
+3. Verify syntax against current docs
+4. Provide specific, actionable fixes
+5. Explain what was wrong and why
+
+## Error Messages Should
+- Be helpful and actionable
+- Suggest next steps
+- Reference documentation where appropriate
+- Include examples of correct usage
+
+# =============================================================================
+# END OF RULES TEMPLATE
+# =============================================================================
+
+# To use this template:
+# 1. Copy to .cursorrules in your project root
+# 2. Customize sections as needed for your project
+# 3. Remove sections that don't apply
+# 4. Add project-specific rules as needed
+# 5. Keep .cursorrules in version control
+# 6. Update as standards evolve
+
+# Version: 1.0
+# Last Updated: 2025-10-17
+# License: Apache 2.0
+
