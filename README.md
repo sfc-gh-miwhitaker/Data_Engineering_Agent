@@ -76,8 +76,8 @@ Data_Engineering_Agent/
 │   ├── ENHANCEMENT_RECOMMENDATIONS.md  # Optional improvements
 │   ├── ENHANCED_AGENT_README.md     # Enhanced agent documentation
 │   ├── RELEASE_NOTES_v2.1.md        # v2.1 release notes
-│   ├── RELEASE_NOTES_v2.3.md        # v2.3 release notes
-│   └── CHANGELOG_v2.2.md            # v2.2-2.3 changelog
+│   ├── RELEASE_NOTES_v2.2.md        # v2.2 release notes
+│   └── RELEASE_NOTES_v2.3.md        # v2.3 release notes
 ├── .cursornotes/                    # Internal development notes (not committed)
 │   └── project_notes.md
 └── archive/                         # Previous versions
@@ -183,7 +183,7 @@ To remove all deployed resources:
 - **v2.1** (2025-10-14): Enhanced agent with domain-specific semantic views
 - **v2.0** (2025-10-08): Initial production release
 
-See `help/CHANGELOG_v2.2.md` for detailed change history.
+See `help/RELEASE_NOTES_v2.2.md` for detailed change history.
 
 ## Contributing
 

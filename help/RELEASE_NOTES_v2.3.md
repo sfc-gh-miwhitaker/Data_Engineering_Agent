@@ -67,7 +67,7 @@ Version 2.3 represents a major architectural simplification that dramatically im
 ### New Documentation
 - Comprehensive v2.3 README with version info and updated instructions
 - This release notes document
-- Updated CHANGELOG covering v2.2-v2.3 changes
+- Updated release notes covering v2.2-v2.3 changes
 
 ### Updated Documentation
 - `README.md`: Complete rewrite with v2.3 architecture
@@ -75,7 +75,7 @@ Version 2.3 represents a major architectural simplification that dramatically im
 - `Snowflake_Assistant_setup.sql`: Accurate line numbers, v2.3 version
 - `sql/deploy_enhanced_agent.sql`: Updated header, v2.3 version
 - `help/TROUBLESHOOTING.md`: Added new issues and solutions
-- `help/CHANGELOG_v2.2.md`: Added v2.3 bug fixes
+- `help/RELEASE_NOTES_v2.2.md`: Added v2.3 bug fixes
 
 ---
 
