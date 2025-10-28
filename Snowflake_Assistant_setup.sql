@@ -81,13 +81,11 @@ USE ROLE identifier($role_name);
 USE snowflake_intelligence.tools;
 
 -- Create semantic view combining query history and attribution data
+-- Note: System-managed warehouses (SYSTEM$STREAMLIT_NOTEBOOK_WH) are filtered in agent instructions
 CREATE OR REPLACE SEMANTIC VIEW snowflake_intelligence.tools.snowflake_query_history
 TABLES (
     SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY,
     SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY
-)
-FILTERS (
-  QUERY_HISTORY.WAREHOUSE_NAME != 'SYSTEM$STREAMLIT_NOTEBOOK_WH' OR QUERY_HISTORY.WAREHOUSE_NAME IS NULL
 )
 FACTS (
   QUERY_HISTORY.BYTES_DELETED as BYTES_DELETED comment='The total amount of data deleted from the database as a result of a query, measured in bytes.',
@@ -285,7 +283,7 @@ FROM SPECIFICATION $$
     "models": { "orchestration": "auto" },
     "instructions": {
         "response": "You are a Snowflake Data Engineer Assistant. Always provide specific recommendations with clear next steps, actual metrics from query history data, prioritized solutions (high-impact first), and Snowflake best practices (Gen 2 warehouses, clustering, modern SQL).",
-        "orchestration": "Orchestration Instruction:\nFor query performance analysis requests:\n1. Query the semantic view to identify relevant queries, performance metrics, and patterns.\n2. Analyze execution times, compilation times, bytes scanned, and warehouse usage.\n3. Prioritize findings by impact (slowest queries, highest resource usage, most frequent errors).\n4. Use Snowflake documentation search to reference best practices and specific features.\n5. Provide specific, actionable recommendations with clear next steps.\n\nFor optimization questions:\n1. Start with the query history data to understand current performance.\n2. Identify bottlenecks and inefficiencies in the data.\n3. Reference Snowflake documentation for feature recommendations (Gen 2 warehouses, clustering, etc.).\n4. Provide concrete optimization steps with expected improvements.\n\nFor troubleshooting:\n1. Analyze error patterns and compilation issues from query history.\n2. Search documentation for specific error resolution guidance.\n3. Provide step-by-step fixes and prevention strategies.\n\nAlways ground recommendations in actual data from the user's query history.",
+        "orchestration": "Orchestration Instruction:\nFor query performance analysis requests:\n1. Query the semantic view to identify relevant queries, performance metrics, and patterns.\n2. ALWAYS filter out system-managed warehouses (WAREHOUSE_NAME != 'SYSTEM$STREAMLIT_NOTEBOOK_WH').\n3. Analyze execution times, compilation times, bytes scanned, and warehouse usage.\n4. Prioritize findings by impact (slowest queries, highest resource usage, most frequent errors).\n5. Use Snowflake documentation search to reference best practices and specific features.\n6. Provide specific, actionable recommendations with clear next steps.\n\nFor optimization questions:\n1. Start with the query history data to understand current performance.\n2. Filter out system-managed warehouses that users cannot control.\n3. Identify bottlenecks and inefficiencies in the data.\n4. Reference Snowflake documentation for feature recommendations (Gen 2 warehouses, clustering, etc.).\n5. Provide concrete optimization steps with expected improvements.\n\nFor troubleshooting:\n1. Analyze error patterns and compilation issues from query history.\n2. Search documentation for specific error resolution guidance.\n3. Provide step-by-step fixes and prevention strategies.\n\nAlways ground recommendations in actual data from the user's query history. NEVER include SYSTEM$STREAMLIT_NOTEBOOK_WH in analysis or recommendations.",
         "sample_questions": [
             { "question": "Based on my top 10 slowest queries, can you provide ways to optimize them?" },
             { "question": "What was the query that is causing performance issues?" },

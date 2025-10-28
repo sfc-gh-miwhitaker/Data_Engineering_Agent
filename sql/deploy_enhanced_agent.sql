@@ -66,13 +66,11 @@ SELECT
 -- SEMANTIC VIEW 1: query_performance
 -- -----------------------------------------------------------------------------
 
+-- Note: System-managed warehouses (SYSTEM$STREAMLIT_NOTEBOOK_WH) are filtered in agent instructions
 CREATE OR REPLACE SEMANTIC VIEW snowflake_intelligence.tools.query_performance
 TABLES (
     SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY,
     SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY
-)
-FILTERS (
-  QUERY_HISTORY.WAREHOUSE_NAME != 'SYSTEM$STREAMLIT_NOTEBOOK_WH' OR QUERY_HISTORY.WAREHOUSE_NAME IS NULL
 )
 FACTS (
   QUERY_HISTORY.BYTES_SCANNED as BYTES_SCANNED comment='The total number of bytes scanned by the query.',
@@ -113,12 +111,10 @@ WITH EXTENSION (CA = '{"verified_queries":[{"name":"Slowest queries today","ques
 -- SEMANTIC VIEW 2: cost_analysis
 -- -----------------------------------------------------------------------------
 
+-- Note: System-managed warehouses (SYSTEM$STREAMLIT_NOTEBOOK_WH) are filtered in agent instructions
 CREATE OR REPLACE SEMANTIC VIEW snowflake_intelligence.tools.cost_analysis
 TABLES (
     SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_METERING_HISTORY
-)
-FILTERS (
-  WAREHOUSE_METERING_HISTORY.WAREHOUSE_NAME != 'SYSTEM$STREAMLIT_NOTEBOOK_WH'
 )
 FACTS (
   WAREHOUSE_METERING_HISTORY.CREDITS_USED as CREDITS_USED comment='Total credits consumed. Synonyms: cost, spend, warehouse cost.',
@@ -139,12 +135,10 @@ WITH EXTENSION (CA = '{"verified_queries":[{"name":"Most expensive warehouses la
 -- SEMANTIC VIEW 3: warehouse_operations
 -- -----------------------------------------------------------------------------
 
+-- Note: System-managed warehouses (SYSTEM$STREAMLIT_NOTEBOOK_WH) are filtered in agent instructions
 CREATE OR REPLACE SEMANTIC VIEW snowflake_intelligence.tools.warehouse_operations
 TABLES (
     SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_LOAD_HISTORY
-)
-FILTERS (
-  WAREHOUSE_LOAD_HISTORY.WAREHOUSE_NAME != 'SYSTEM$STREAMLIT_NOTEBOOK_WH'
 )
 FACTS (
   WAREHOUSE_LOAD_HISTORY.AVG_RUNNING as AVG_RUNNING comment='Average concurrent queries. Synonyms: concurrency, active queries.',
@@ -178,7 +172,7 @@ FROM SPECIFICATION $$
     "models": { "orchestration": "auto" },
     "instructions": {
         "response": "You are a Snowflake Data Engineer Assistant. Provide specific recommendations with clear next steps, actual metrics, prioritized solutions, and Snowflake best practices.",
-        "orchestration": "TOOL SELECTION:\n- query_performance: slow queries, errors, optimization, performance issues, execution metrics\n- cost_analysis: costs, spend, credits, budget, expensive queries, FinOps\n- warehouse_operations: sizing, queues, utilization, capacity, concurrency\n- snowflake_knowledge_ext_documentation: features, best practices, how-to guides\n- cortex_email_tool: send reports via email\n\nAlways cite specific metrics. Prioritize by business impact.",
+        "orchestration": "TOOL SELECTION:\n- query_performance: slow queries, errors, optimization, performance issues, execution metrics\n- cost_analysis: costs, spend, credits, budget, expensive queries, FinOps\n- warehouse_operations: sizing, queues, utilization, capacity, concurrency\n- snowflake_knowledge_ext_documentation: features, best practices, how-to guides\n- cortex_email_tool: send reports via email\n\nFILTERING RULES:\n- ALWAYS filter out system-managed warehouses: WAREHOUSE_NAME != 'SYSTEM$STREAMLIT_NOTEBOOK_WH'\n- NEVER include SYSTEM$STREAMLIT_NOTEBOOK_WH in analysis or recommendations\n- Users cannot control system-managed warehouses\n\nAlways cite specific metrics. Prioritize by business impact.",
         "sample_questions": [
             { "question": "What are my top 10 slowest queries and how can I optimize them?" },
             { "question": "Which warehouses are costing me the most money?" },
