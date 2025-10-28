@@ -19,8 +19,8 @@
  * 
  * Configuration:
  *   Before running, update the following in the script:
- *   - Line 49: SET role_name (default: SYSADMIN - change if using different role)
- *   - Line 241: Replace 'YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM' with your email
+ *   - Line 48: SET role_name (default: SYSADMIN - change if using different role)
+ *   - Line 259: Replace 'YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM' with your email
  *   
  *   Note: Agent uses the user's current warehouse context (no dedicated warehouse needed)
  * 

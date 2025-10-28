@@ -33,8 +33,8 @@ This project provides a complete setup for deploying a Snowflake Intelligence Ag
  
 1. **Review and Configure the Setup Script**
    - Open `Snowflake_Assistant_setup.sql`
-   - **Line 49**: Update `SET role_name` if needed (default: SYSADMIN)
-   - **Line 241**: Replace `YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM` with your email
+   - **Line 48**: Update `SET role_name` if needed (default: SYSADMIN)
+   - **Line 259**: Replace `YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM` with your email
    - **Important**: Ensure you have an active warehouse before running
 
 2. **Execute the Script as ACCOUNTADMIN**

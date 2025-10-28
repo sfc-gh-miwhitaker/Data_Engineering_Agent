@@ -49,7 +49,7 @@ SELECT CURRENT_ROLE();
 SQL execution error: Warehouse 'COMPUTE_WH' does not exist or not authorized
 ```
 
-**Cause:** The warehouse specified in the configuration variables (line 49) doesn't exist in your account.
+**Cause:** The warehouse specified in the configuration variables (line 48) doesn't exist in your account.
 
 **Solution:**
 ```sql
@@ -119,7 +119,7 @@ SQL execution error: Listing 'GZSTZ67BY9OQ4' does not exist or not authorized
 
 3. Search for "Snowflake Documentation" in Snowflake Marketplace UI and note the correct listing ID
 
-4. Update line 252 with the correct listing ID if changed
+4. Update line 271 with the correct listing ID if changed
 
 **Prevention:** Ensure outbound network access to Snowflake Marketplace is allowed.
 
@@ -166,7 +166,7 @@ The script automatically handles this by switching to ACCOUNTADMIN for notificat
 SQL execution error: Email domain not allowed for notification integration
 ```
 
-**Cause:** The email domain you specified (line 242) is not allow-listed in your Snowflake account.
+**Cause:** The email domain you specified (line 259) is not allow-listed in your Snowflake account.
 
 **Solution:**
 
@@ -178,7 +178,7 @@ SQL execution error: Email domain not allowed for notification integration
    SHOW NOTIFICATION INTEGRATIONS;
    ```
 
-3. Update line 242 with an allowed email address
+3. Update line 259 with an allowed email address
 
 4. Re-run the email integration section:
    ```sql
@@ -508,9 +508,9 @@ $$;
 
 **Answer:** 
 
-1. For test emails, update line 242 in the setup script and re-run that section
+1. For test emails, update line 259 in the setup script and re-run that section
 
-2. For agent email tool default, update the `recipient_email` description in the agent specification (line 292-295)
+2. For agent email tool default, update the `recipient_email` description in the agent specification (line 317-319)
 
 3. For runtime changes, specify the email when asking the agent: "Send email to newaddress@domain.com"
 

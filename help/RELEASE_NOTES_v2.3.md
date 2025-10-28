@@ -139,8 +139,8 @@ Each view focuses on a single domain with naturally related tables only.
 - Warehouse grants (lines 64-70 in v2.2)
 
 ### Updated Configuration
-- Line 49: `SET role_name` (unchanged)
-- Line 241: Email placeholder (line number corrected in documentation)
+- Line 48: `SET role_name` (unchanged)
+- Line 259: Email placeholder (line number corrected in documentation)
 
 ---
 

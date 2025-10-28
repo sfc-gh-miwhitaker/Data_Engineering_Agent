@@ -25,7 +25,7 @@
  *   5. Keeps original agent for comparison
  * 
  * Configuration:
- *   Line 45: SET role_name (default: SYSADMIN)
+ *   Line 47: SET role_name (default: SYSADMIN)
  *   Note: Agent uses user's warehouse context automatically
  * 
  * Author: Snowflake Community

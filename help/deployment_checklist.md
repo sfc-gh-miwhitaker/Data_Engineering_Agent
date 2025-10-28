@@ -12,7 +12,7 @@ Before running `Snowflake_Assistant_setup.sql`, verify these configurations:
 
 **Note**: The agent uses the user's current warehouse context - no dedicated warehouse needed.
 
-### 2. Email Configuration (Line 241)
+### 2. Email Configuration (Line 259)
 - [ ] Replace `YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM` with valid email address
 - [ ] Confirm email domain is allow-listed in Snowflake notification settings
 - [ ] Test email delivery after deployment

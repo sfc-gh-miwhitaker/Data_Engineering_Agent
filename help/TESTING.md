@@ -49,9 +49,9 @@ SELECT CURRENT_REGION(), CURRENT_ACCOUNT();
 
 ### ✓ Configuration Review
 
-- [ ] Reviewed setup script configuration variables (lines 48-49)
+- [ ] Reviewed setup script configuration variables (line 48)
 - [ ] Warehouse name updated (or confirmed `COMPUTE_WH` exists)
-- [ ] Email address updated in test call (line 242)
+- [ ] Email address updated in test call (line 259)
 - [ ] Understood all objects that will be created
 
 **Validation Queries:**

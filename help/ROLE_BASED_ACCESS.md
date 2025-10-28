@@ -128,7 +128,7 @@ If you've already deployed with PUBLIC access:
 If using the enhanced agent (`sql/deploy_enhanced_agent.sql`), also update:
 
 ```sql
--- Find this line (around line 216):
+-- Find this line (around line 210):
 GRANT USAGE ON AGENT snowflake_intelligence.agents.snowflake_assistant_enhanced TO ROLE PUBLIC;
 
 -- Replace with:
