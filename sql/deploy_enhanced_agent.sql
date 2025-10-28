@@ -37,9 +37,9 @@
  *   Execute this entire script as ACCOUNTADMIN or SYSADMIN
  ******************************************************************************/
 
--- =============================================================================
--- SECTION 1: CONFIGURATION
--- =============================================================================
+-- ============================================================================
+-- STEP 1: CONFIGURATION
+-- ============================================================================
 
 USE ROLE ACCOUNTADMIN;
 
@@ -58,9 +58,9 @@ SELECT
     CURRENT_SCHEMA() as schema,
     CURRENT_TIMESTAMP() as deployment_time;
 
--- =============================================================================
--- SECTION 2: CREATE ENHANCED SEMANTIC VIEWS
--- =============================================================================
+-- ============================================================================
+-- STEP 2: CREATE ENHANCED SEMANTIC VIEWS
+-- ============================================================================
 
 -- -----------------------------------------------------------------------------
 -- SEMANTIC VIEW 1: query_performance
@@ -156,14 +156,13 @@ COMMENT = 'Warehouse utilization and capacity planning metrics. Ask about wareho
 WITH EXTENSION (CA = '{"verified_queries":[{"name":"Warehouses with high queues","question":"Which warehouses have the most queued queries?","sql":"SELECT warehouse_name, AVG(avg_queued_load) as avg_queue_depth FROM warehouse_operations WHERE start_time >= DATEADD(DAY, -7, CURRENT_TIMESTAMP()) GROUP BY warehouse_name HAVING avg_queue_depth > 0 ORDER BY avg_queue_depth DESC"}]}');
 
 
--- =============================================================================
--- SECTION 3: CREATE ENHANCED AGENT
--- =============================================================================
-
+-- ============================================================================
+-- STEP 3: CREATE ENHANCED AGENT
+-- ============================================================================
 
 USE SCHEMA snowflake_intelligence.agents;
 
--- Create enhanced agent with dedicated warehouse
+-- Create enhanced agent with domain-specific semantic views
 CREATE OR REPLACE AGENT snowflake_intelligence.agents.snowflake_assistant_enhanced
 WITH PROFILE = '{ "display_name": "Snowflake Assistant (Enhanced)" }'
 COMMENT = 'Enhanced AI-powered agent with domain-specific semantic views for performance, cost, and capacity analysis'
@@ -197,9 +196,9 @@ FROM SPECIFICATION $$
 }
 $$;
 
--- =============================================================================
--- SECTION 4: GRANT ACCESS
--- =============================================================================
+-- ============================================================================
+-- STEP 4: GRANT ACCESS
+-- ============================================================================
 
 -- Grant agent access to PUBLIC role (allows all users to use the enhanced agent)
 -- 
@@ -209,10 +208,9 @@ $$;
 --   This limits enhanced agent access to only members of that role
 GRANT USAGE ON AGENT snowflake_intelligence.agents.snowflake_assistant_enhanced TO ROLE PUBLIC;
 
--- =============================================================================
--- SECTION 5: VERIFICATION
--- =============================================================================
-
+-- ============================================================================
+-- STEP 5: VERIFY DEPLOYMENT
+-- ============================================================================
 
 -- Check semantic views (should show 4 total: original + 3 enhanced)
 SHOW SEMANTIC VIEWS IN SCHEMA snowflake_intelligence.tools;
@@ -227,7 +225,7 @@ SHOW AGENTS IN DATABASE snowflake_intelligence;
 --   "Which warehouses are costing the most?"
 --   "Show me warehouses with high queue times"
 
--- =============================================================================
+-- ============================================================================
 -- DEPLOYMENT COMPLETE
 -- =============================================================================
 --
