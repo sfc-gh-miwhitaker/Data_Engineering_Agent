@@ -1,5 +1,5 @@
 /*******************************************************************************
- * File: teardown_script.sql
+ * File: sql/teardown_script.sql
  * 
  * Synopsis:
  *   Complete teardown script for removing all Snowflake Intelligence Agent

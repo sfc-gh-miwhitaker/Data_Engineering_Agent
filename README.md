@@ -32,14 +32,14 @@ This project provides a complete setup for deploying a Snowflake Intelligence Ag
 ## Quick Start
  
 1. **Review and Configure the Setup Script**
-   - Open `Snowflake_Assistant_setup.sql`
+   - Open `sql/Snowflake_Assistant_setup.sql`
    - **Line 48**: Update `SET role_name` if needed (default: SYSADMIN)
    - **Line 259**: Replace `YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM` with your email
    - **Important**: Ensure you have an active warehouse before running
 
 2. **Execute the Script as ACCOUNTADMIN**
    - Sign in to Snowsight as a user with the `ACCOUNTADMIN` role
-   - Run the entire `Snowflake_Assistant_setup.sql` in the Worksheets UI
+   - Run the entire `sql/Snowflake_Assistant_setup.sql` in the Worksheets UI
    - Script is idempotent (safe to re-run)
    - Takes approximately 2-3 minutes to complete
 
@@ -63,10 +63,10 @@ Data_Engineering_Agent/
 ├── .gitignore                       # Git ignore rules for sensitive files
 ├── LICENSE                          # Apache 2.0 license
 ├── README.md                        # This file
-├── Snowflake_Assistant_setup.sql    # Full automation script for agent deployment
-├── teardown_script.sql              # Complete removal of all deployed resources
-├── sql/                             # Enhanced agent SQL scripts
-│   └── deploy_enhanced_agent.sql    # Complete enhanced agent deployment
+├── sql/                             # SQL scripts
+│   ├── Snowflake_Assistant_setup.sql    # Full automation script for agent deployment
+│   ├── deploy_enhanced_agent.sql        # Enhanced agent with domain-specific views
+│   └── teardown_script.sql              # Complete removal of all deployed resources
 ├── help/                            # Documentation and guides
 │   ├── deployment_checklist.md      # Pre-deployment verification steps
 │   ├── ENHANCEMENT_RECOMMENDATIONS.md  # Optional improvements
@@ -165,7 +165,7 @@ See `help/TESTING.md` for comprehensive testing procedures and validation steps.
 To remove all deployed resources:
 
 ```sql
--- Execute teardown_script.sql as ACCOUNTADMIN
+-- Execute sql/teardown_script.sql as ACCOUNTADMIN
 -- This removes agents, semantic views, and other project objects
 -- The script is safe by default - preserves shared databases/schemas
 ```

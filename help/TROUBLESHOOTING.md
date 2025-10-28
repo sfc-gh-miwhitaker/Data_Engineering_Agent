@@ -538,7 +538,7 @@ GRANT USAGE ON WAREHOUSE COMPUTE_WH TO ROLE <target_role>;
 
 ### Q4: How do I completely remove the agent?
 
-**Answer:** Use the provided `teardown_script.sql` for safe removal:
+**Answer:** Use the provided `sql/teardown_script.sql` for safe removal:
 
 **The script implements a SAFE teardown that**:
 - ✓ Removes ONLY project-specific objects (agents, semantic views, procedures)
@@ -548,7 +548,7 @@ GRANT USAGE ON WAREHOUSE COMPUTE_WH TO ROLE <target_role>;
 
 ```bash
 # Review the teardown script first
-cat teardown_script.sql
+cat sql/teardown_script.sql
 
 # Execute in Snowsight as SYSADMIN
 # The script will check for other objects and preserve them

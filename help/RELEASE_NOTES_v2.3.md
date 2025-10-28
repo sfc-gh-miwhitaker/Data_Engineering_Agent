@@ -72,7 +72,7 @@ Version 2.3 represents a major architectural simplification that dramatically im
 ### Updated Documentation
 - `README.md`: Complete rewrite with v2.3 architecture
 - `deployment_checklist.md`: Updated version, removed warehouse config steps
-- `Snowflake_Assistant_setup.sql`: Accurate line numbers, v2.3 version
+- `sql/Snowflake_Assistant_setup.sql`: Accurate line numbers, v2.3 version
 - `sql/deploy_enhanced_agent.sql`: Updated header, v2.3 version
 - `help/TROUBLESHOOTING.md`: Added new issues and solutions
 - `help/RELEASE_NOTES_v2.2.md`: Added v2.3 bug fixes
@@ -147,14 +147,14 @@ Each view focuses on a single domain with naturally related tables only.
 ## 📊 Migration Guide
 
 ### For New Deployments
-Simply run `Snowflake_Assistant_setup.sql` - no additional steps needed. The agent will use whatever warehouse you have active.
+Simply run `sql/Snowflake_Assistant_setup.sql` - no additional steps needed. The agent will use whatever warehouse you have active.
 
 ### For Existing v2.2 Deployments
 
 **Option 1: Re-run Setup (Recommended)**
 ```sql
 -- Script is idempotent, safe to re-run
--- Execute Snowflake_Assistant_setup.sql as ACCOUNTADMIN
+-- Execute sql/Snowflake_Assistant_setup.sql as ACCOUNTADMIN
 -- Agent will be recreated with new architecture
 ```
 
@@ -219,7 +219,7 @@ DROP WAREHOUSE IF EXISTS snowflake_intelligence_wh;
 
 3. **Enhanced agent requires base agent**
    - `sql/deploy_enhanced_agent.sql` assumes base agent is already deployed
-   - Run `Snowflake_Assistant_setup.sql` first
+   - Run `sql/Snowflake_Assistant_setup.sql` first
 
 ---
 

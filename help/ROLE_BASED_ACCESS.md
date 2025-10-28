@@ -75,7 +75,7 @@ GRANT IMPORTED PRIVILEGES ON DATABASE snowflake_documentation TO ROLE DATA_ENGIN
 
 If you haven't deployed yet, modify the script before running:
 
-1. **Open `Snowflake_Assistant_setup.sql`**
+1. **Open `sql/Snowflake_Assistant_setup.sql`**
 
 2. **Find all PUBLIC grants** (search for "GRANT" and "PUBLIC"):
    - Line ~53: `GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE PUBLIC;`
@@ -191,7 +191,7 @@ GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE COST_OPT_PROJECT_TEAM;
 
 1. **Main agent for Data Engineering**:
    ```sql
-   -- Deploy Snowflake_Assistant_setup.sql with DATA_ENGINEERING role
+   -- Deploy sql/Snowflake_Assistant_setup.sql with DATA_ENGINEERING role
    GRANT USAGE ON AGENT snowflake_intelligence.agents.snowflake_assistant_v2 
        TO ROLE DATA_ENGINEERING_TEAM;
    ```

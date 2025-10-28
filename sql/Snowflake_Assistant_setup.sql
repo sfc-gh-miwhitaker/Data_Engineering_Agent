@@ -1,5 +1,5 @@
 /*******************************************************************************
- * File: Snowflake_Assistant_setup.sql
+ * File: sql/Snowflake_Assistant_setup.sql
  * 
  * Synopsis:
  *   Complete setup script for deploying the Snowflake Intelligence Agent,
