@@ -79,17 +79,9 @@ SHOW CORTEX SEARCH SERVICES IN DATABASE snowflake_documentation;
 - [x] Idempotent script (safe to re-run)
 - [x] All placeholders clearly marked and documented
 
-## Support Information
-
-**License:** Apache 2.0  
-**Support:** Community-supported  
-**Original Author:** Kaitlyn Wells (@snowflake)  
-**Modified:** 2025-10-17  
-**Version:** 2.3
-
 ## Additional Resources
 
-- `help/TESTING.md` - Comprehensive testing procedures
-- `help/TROUBLESHOOTING.md` - Common issues and solutions
-- `help/ENHANCED_AGENT_README.md` - Enhanced agent deployment guide
-
+- [TESTING.md](TESTING.md) - Comprehensive testing procedures
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Common issues and solutions
+- [ENHANCED_AGENT_README.md](ENHANCED_AGENT_README.md) - Enhanced agent deployment guide
+- [ROLE_BASED_ACCESS.md](ROLE_BASED_ACCESS.md) - Restrict access to specific teams

@@ -29,6 +29,8 @@ This project provides a complete setup for deploying a Snowflake Intelligence Ag
 - Outbound email domain allow-listed for Snowflake notification integrations
 - Users must have an active warehouse to run agent queries (agent uses user's current warehouse context)
 
+> **📋 Ready to deploy?** See the complete [Deployment Checklist](help/deployment_checklist.md) for step-by-step validation and security review.
+
 ## Quick Start
  
 1. **Review and Configure the Setup Script**
