@@ -127,7 +127,39 @@ SQL execution error: Listing 'GZSTZ67BY9OQ4' does not exist or not authorized
 
 ## Deployment Failures
 
-### Issue 5: "Email integration creation fails"
+### Issue 5: "Insufficient privileges to create notification integration"
+
+**Symptom:**
+```
+SQL access control error: Insufficient privileges to operate on NOTIFICATION INTEGRATION
+```
+
+**Cause:** SYSADMIN role cannot create notification integrations - only ACCOUNTADMIN can.
+
+**Solution:**
+
+The script automatically handles this by switching to ACCOUNTADMIN for notification integration creation. If you encounter this error:
+
+1. Verify the script is being executed as written (lines 191-203)
+2. Ensure you have ACCOUNTADMIN privileges:
+   ```sql
+   -- Check your granted roles
+   SHOW GRANTS TO USER CURRENT_USER();
+   
+   -- Verify ACCOUNTADMIN access
+   USE ROLE ACCOUNTADMIN;
+   SELECT CURRENT_ROLE();
+   ```
+
+3. If you don't have ACCOUNTADMIN:
+   - Ask your account administrator to run the notification integration section (lines 191-203)
+   - OR remove the email functionality (comment out lines 191-245) and proceed without email features
+
+**Prevention:** The script now includes proper role switching. No action needed if running the latest version (v2.3.1+).
+
+---
+
+### Issue 6: "Email integration creation fails"
 
 **Symptom:**
 ```
