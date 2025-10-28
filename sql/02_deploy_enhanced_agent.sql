@@ -1,5 +1,5 @@
 /*******************************************************************************
- * File: sql/deploy_enhanced_agent.sql
+ * File: sql/02_deploy_enhanced_agent.sql
  * 
  * Synopsis:
  *   Complete deployment script for enhanced Snowflake Intelligence Agent

@@ -21,7 +21,7 @@ This guide provides comprehensive testing procedures to validate your Snowflake 
 
 ## Pre-Deployment Checklist
 
-Before executing the `sql/Snowflake_Assistant_setup.sql` script, verify all prerequisites are met:
+Before executing the `sql/01_Snowflake_Assistant_setup.sql` script, verify all prerequisites are met:
 
 ### ✓ Account Prerequisites
 
@@ -559,9 +559,9 @@ If deployment fails or issues are detected, follow these rollback steps.
    SHOW AGENTS IN ACCOUNT;
    SHOW NOTIFICATION INTEGRATIONS;
    ```
-3. Execute relevant sections of `sql/teardown_script.sql` to remove partial deployment
+3. Execute relevant sections of `sql/03_teardown_script.sql` to remove partial deployment
 4. Fix configuration issue
-5. Re-run complete `sql/Snowflake_Assistant_setup.sql`
+5. Re-run complete `sql/01_Snowflake_Assistant_setup.sql`
 
 ---
 
@@ -590,7 +590,7 @@ If deployment fails or issues are detected, follow these rollback steps.
 
 **If deployment must be completely removed:**
 
-1. Review `sql/teardown_script.sql` thoroughly
+1. Review `sql/03_teardown_script.sql` thoroughly
 2. Execute teardown script as ACCOUNTADMIN
 3. Verify complete removal with validation queries in teardown script
 4. Document lessons learned

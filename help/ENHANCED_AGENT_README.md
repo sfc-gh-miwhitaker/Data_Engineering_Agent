@@ -58,7 +58,7 @@ Clear orchestration instructions help the agent pick the right tool:
 ```sql
 -- Execute the complete deployment script
 USE ROLE SYSADMIN;
-@sql/deploy_enhanced_agent.sql
+@sql/02_deploy_enhanced_agent.sql
 ```
 
 This creates:
@@ -228,7 +228,7 @@ Give users access to both and let them choose.
 SHOW SEMANTIC VIEWS IN SCHEMA snowflake_intelligence.tools;
 
 -- If missing, re-run deployment
-@sql/deploy_enhanced_agent.sql
+@sql/02_deploy_enhanced_agent.sql
 ```
 
 ### Issue: "No data returned from view"
@@ -300,7 +300,7 @@ Follow the pattern:
 |------|---------|
 | `sql/semantic_views_enhanced.sql` | Detailed semantic view definitions with full comments |
 | `sql/agent_enhanced.sql` | Enhanced agent specification with orchestration logic |
-| `sql/deploy_enhanced_agent.sql` | Complete deployment script (recommended) |
+| `sql/02_deploy_enhanced_agent.sql` | Complete deployment script (recommended) |
 | `ENHANCED_AGENT_README.md` | This file |
 
 ---
@@ -325,7 +325,7 @@ Follow the pattern:
 
 ## Next Steps
 
-1. **Deploy**: Run `sql/deploy_enhanced_agent.sql`
+1. **Deploy**: Run `sql/02_deploy_enhanced_agent.sql`
 2. **Test**: Try sample questions in Snowsight
 3. **Compare**: Evaluate vs original agent
 4. **Customize**: Add synonyms or fields for your use cases

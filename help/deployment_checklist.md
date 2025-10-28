@@ -5,7 +5,7 @@
 
 ## Required Configuration Changes
 
-Before running `sql/Snowflake_Assistant_setup.sql`, verify these configurations:
+Before running `sql/01_Snowflake_Assistant_setup.sql`, verify these configurations:
 
 ### 1. Configuration Variables (Line 48)
 - [ ] `SET role_name = 'SYSADMIN';` - Confirm target role (default: SYSADMIN)

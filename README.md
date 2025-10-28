@@ -32,14 +32,14 @@ This project provides a complete setup for deploying a Snowflake Intelligence Ag
 ## Quick Start
  
 1. **Review and Configure the Setup Script**
-   - Open `sql/Snowflake_Assistant_setup.sql`
+   - Open `sql/01_Snowflake_Assistant_setup.sql`
    - **Line 48**: Update `SET role_name` if needed (default: SYSADMIN)
    - **Line 259**: Replace `YOUR_EMAIL_ADDRESS@EMAILDOMAIN.COM` with your email
    - **Important**: Ensure you have an active warehouse before running
 
 2. **Execute the Script as ACCOUNTADMIN**
    - Sign in to Snowsight as a user with the `ACCOUNTADMIN` role
-   - Run the entire `sql/Snowflake_Assistant_setup.sql` in the Worksheets UI
+   - Run the entire `sql/01_Snowflake_Assistant_setup.sql` in the Worksheets UI
    - Script is idempotent (safe to re-run)
    - Takes approximately 2-3 minutes to complete
 
@@ -63,18 +63,17 @@ Data_Engineering_Agent/
 ├── .gitignore                       # Git ignore rules for sensitive files
 ├── LICENSE                          # Apache 2.0 license
 ├── README.md                        # This file
-├── sql/                             # SQL scripts
-│   ├── Snowflake_Assistant_setup.sql    # Full automation script for agent deployment
-│   ├── deploy_enhanced_agent.sql        # Enhanced agent with domain-specific views
-│   └── teardown_script.sql              # Complete removal of all deployed resources
-├── help/                            # Documentation and guides
-│   ├── deployment_checklist.md      # Pre-deployment verification steps
-│   ├── ENHANCEMENT_RECOMMENDATIONS.md  # Optional improvements
-│   ├── ENHANCED_AGENT_README.md     # Enhanced agent documentation
-│   ├── RELEASE_NOTES_v2.3.md        # Current release notes
-│   ├── ROLE_BASED_ACCESS.md         # Restrict access to specific teams/roles
-│   ├── TESTING.md                   # Validation procedures and test scenarios
-│   └── TROUBLESHOOTING.md           # Common issues and solutions
+├── sql/                                    # SQL scripts (numbered by execution order)
+│   ├── 01_Snowflake_Assistant_setup.sql    # STEP 1: Deploy base agent (run first)
+│   ├── 02_deploy_enhanced_agent.sql        # STEP 2: Deploy enhanced agent (optional)
+│   └── 03_teardown_script.sql              # STEP 3: Remove all resources (cleanup)
+├── help/                               # Documentation and guides
+│   ├── deployment_checklist.md         # Pre-deployment verification steps
+│   ├── ENHANCED_AGENT_README.md        # Enhanced agent documentation
+│   ├── RELEASE_NOTES_v2.3.md           # Current release notes
+│   ├── ROLE_BASED_ACCESS.md            # Restrict access to specific teams/roles
+│   ├── TESTING.md                      # Validation procedures and test scenarios
+│   └── TROUBLESHOOTING.md              # Common issues and solutions
 ```
 
 ## Enhanced Agent (Optional)
@@ -165,7 +164,7 @@ See `help/TESTING.md` for comprehensive testing procedures and validation steps.
 To remove all deployed resources:
 
 ```sql
--- Execute sql/teardown_script.sql as ACCOUNTADMIN
+-- Execute sql/03_teardown_script.sql as ACCOUNTADMIN
 -- This removes agents, semantic views, and other project objects
 -- The script is safe by default - preserves shared databases/schemas
 ```
